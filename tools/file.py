@@ -1,8 +1,3 @@
-def print_array(array):
-    for line in array:
-        print("".join(line))
-
-
 def read_file_as_tuples(filename):
     result = []
     try:
