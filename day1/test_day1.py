@@ -34,3 +34,19 @@ def test_sort_tuple_halves():
 def test_part1():
     assert day1.part1(input="input_example.txt") == 11
     assert day1.part1(input="input.txt") == 3246517
+
+
+def test_part2():
+    assert day1.part2(input="input_example.txt") == 31
+    assert day1.part2(input="input.txt") == 29379307
+
+
+def test_calc_similarity():
+    assert day1.calc_similarity(3, [3, 1, 2]) == 3
+    assert day1.calc_similarity(4, [1, 2, 3, 6]) == 0
+    assert day1.calc_similarity(1, [0]) == 0
+
+
+def test_get_count():
+    assert day1.get_count(3, [1, 2, 3, 4, 5, 6]) == 1
+    assert day1.get_count(7, [1, 2, 3, 4, 5, 6]) == 0

@@ -43,3 +43,27 @@ def part1(input="./day1/input.txt"):
     tuples = read_file_as_tuples(input)
     sorted_tuples = sort_tuple_halves(tuples)
     return sum_distance_tuples(sorted_tuples)
+
+
+def part2(input="./day1/input.txt"):
+
+    tuples = read_file_as_tuples(input)
+    similarity_sum = 0
+
+    left_half = [t[0] for t in tuples]
+
+    right_half = [t[1] for t in tuples]
+
+    for id in left_half:
+        similarity_sum += calc_similarity(id, right_half)
+
+    return similarity_sum
+
+
+def calc_similarity(id, list):
+    count = get_count(id, list)
+    return id * count
+
+
+def get_count(id, list):
+    return list.count(id)
