@@ -2,14 +2,6 @@ from tools.file import read_file_as_tuples
 import day1
 
 
-def test_distance():
-    assert day1.distance(1, 3) == 2
-    assert day1.distance(2, 3) == 1
-    assert day1.distance(3, 3) == 0
-    assert day1.distance(3, 4) == 1
-    assert day1.distance(4, 9) == 5
-
-
 def test_sum_distance():
     assert day1.sum_distance_tuples([(3, 1), (4, 6)]) == (2 + 2)
     example = read_file_as_tuples("day1/input_example.txt")
@@ -35,8 +27,3 @@ def test_calc_similarity():
     assert day1.calc_similarity(3, [3, 1, 2]) == 3
     assert day1.calc_similarity(4, [1, 2, 3, 6]) == 0
     assert day1.calc_similarity(1, [0]) == 0
-
-
-def test_get_count():
-    assert day1.get_count(3, [1, 2, 3, 4, 5, 6]) == 1
-    assert day1.get_count(7, [1, 2, 3, 4, 5, 6]) == 0
