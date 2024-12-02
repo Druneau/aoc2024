@@ -11,3 +11,14 @@ def read_file_as_tuples(filename):
     except Exception as e:
         print(f"An error occured: {e}")
     return result
+
+
+def read_file_as_lists(filename):
+    result = []
+    try:
+        with open(filename, "r") as file:
+            for line in file:
+                result.append([int(val) for val in line.split()])
+    except Exception as e:
+        print(f"An error occured: {e}")
+    return result
