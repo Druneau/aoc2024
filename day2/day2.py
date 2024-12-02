@@ -3,53 +3,42 @@ from tools.file import read_file_as_lists
 
 
 def report_diff(report):
-    arr = np.array(report)
-    diff = np.diff(arr)
-    return diff
+    arr = np.asarray(report)
+    return np.diff(arr)
 
 
-def report_is_safe(report, dampen=False):
+def generate_dampened_lists(report):
+    return [report[:i] + report[i + 1 :] for i in range(len(report))]
+
+
+def report_is_safe(report, allow_dampen=False):
     diff = report_diff(report)
-    positive = np.all(diff > 0)
-    negative = np.all(diff < 0)
+
     min = np.min(diff)
     max = np.max(diff)
 
-    if positive:
+    if np.all(diff > 0):
         if min > 0 and max < 4:
             return True
-    elif negative:
+    elif np.all(diff < 0):
         if max < 0 and min > -4:
             return True
-    elif dampen:
-        print(f"{diff}")
-        print(f"p:{positive}, n:{negative}, min:{min}, max{max}")
-        zero_count = np.sum(diff == 0)
-        negative_count = np.sum(diff < 0)
-        positive_count = np.sum(diff > 0)
-        print(f"z:{zero_count}, n:{negative_count}, p:{positive_count}")
+
+    if allow_dampen:
+        return any(
+            report_is_safe(dampened_report, allow_dampen=False)
+            for dampened_report in generate_dampened_lists(report)
+        )
 
     return False
 
 
 def part1(filename):
     reports = read_file_as_lists(filename)
-
-    safe_count = 0
-
-    for r in reports:
-        if report_is_safe(r):
-            safe_count += 1
-
-    return safe_count
+    return sum(1 for r in reports if report_is_safe(r))
 
 
 def part2(filename):
     reports = read_file_as_lists(filename)
 
-    safe_count = 0
-
-    for r in reports:
-        if report_is_safe(r, dampen=True):
-            safe_count += 1
-    return 0
+    return sum(1 for r in reports if report_is_safe(r, allow_dampen=True))
