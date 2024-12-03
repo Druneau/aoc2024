@@ -4,6 +4,7 @@ import tools.file
 PATTERN_MUL = r"mul\(\d+,\d+\)"
 PATTERN_DO = r"do\(\)"
 PATTERN_DONT = r"don't\(\)"
+PATTERN_ALL = f"{PATTERN_MUL}|{PATTERN_DO}|{PATTERN_DONT}"
 
 
 def get_instructions(line, pattern):
@@ -31,7 +32,7 @@ def part1(filename):
 
 def part2(filename):
     lines = tools.file.read_file_as_strings(filename)
-    return execute_program(lines, f"{PATTERN_MUL}|{PATTERN_DO}|{PATTERN_DONT}")
+    return execute_program(lines, PATTERN_ALL)
 
 
 def execute_program(lines, pattern):
@@ -42,9 +43,8 @@ def execute_program(lines, pattern):
     total_sum = 0
     do_mul = True
 
-    for result, do_mul in (
-        execute_instruction(instruction, do_mul) for instruction in instructions
-    ):
+    for instruction in instructions:
+        result, do_mul = execute_instruction(instruction, do_mul)
         total_sum += result
 
     return total_sum
