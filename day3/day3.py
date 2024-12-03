@@ -13,16 +13,15 @@ def get_instructions(line, pattern):
 
 def execute_instruction(instruction, do_mul):
     if instruction == "do()":
-        do_mul = True
+        return 0, True
     elif instruction == "don't()":
-        do_mul = False
-    else:
-        if do_mul:
-            match = re.search(r"(\d+),(\d+)", instruction)
-            num1, num2 = map(int, match.groups())
-            return num1 * num2, True
+        return 0, False
+    elif do_mul:
+        match = re.search(r"(\d+),(\d+)", instruction)
+        num1, num2 = map(int, match.groups())
+        return num1 * num2, True
 
-    return 0, do_mul
+    return 0, False
 
 
 def part1(filename):
