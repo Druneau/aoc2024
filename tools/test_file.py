@@ -21,3 +21,9 @@ def test_read_file_as_lists():
         [8, 6, 4, 4, 1],
         [1, 3, 6, 7, 9],
     ]
+
+
+def test_read_file_as_strings():
+    assert tools.file.read_file_as_strings("day3/input_example.txt") == [
+        "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+    ]

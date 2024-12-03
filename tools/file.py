@@ -22,3 +22,14 @@ def read_file_as_lists(filename):
     except Exception as e:
         print(f"An error occured: {e}")
     return result
+
+
+def read_file_as_strings(filename):
+    result = []
+    try:
+        with open(filename, "r") as file:
+            for line in file:
+                result.append(line)
+    except Exception as e:
+        print(f"An error occured: {e}")
+    return result
