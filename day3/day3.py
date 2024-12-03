@@ -29,20 +29,16 @@ def execute_instruction(instruction):
 
 def part1(filename):
     lines = tools.file.read_file_as_strings(filename)
-    instructions = [
-        instruction
-        for line in lines
-        for instruction in get_instructions(line, PATTERN_MUL)
-    ]
-    return sum(execute_instruction(instruction) for instruction in instructions)
+    return execute_program(lines, PATTERN_MUL)
 
 
 def part2(filename):
     lines = tools.file.read_file_as_strings(filename)
-    pattern_instructions = f"{PATTERN_MUL}|{PATTERN_DO}|{PATTERN_DONT}"
+    return execute_program(lines, f"{PATTERN_MUL}|{PATTERN_DO}|{PATTERN_DONT}")
+
+
+def execute_program(lines, pattern):
     instructions = [
-        instruction
-        for line in lines
-        for instruction in get_instructions(line, pattern_instructions)
+        instruction for line in lines for instruction in get_instructions(line, pattern)
     ]
     return sum(execute_instruction(instruction) for instruction in instructions)
