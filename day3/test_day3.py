@@ -6,10 +6,14 @@ INPUT = "day3/input.txt"
 
 
 def test_regex_match_mul():
-    assert day3.get_muls("mul(1,2)") == ["mul(1,2)"]
-    assert day3.get_muls("ul(1,2)") == []
-    assert day3.get_muls("asdfmul(1,2))(@*#)") == ["mul(1,2)"]
-    assert day3.get_muls("mul(1,2)mul(1,2))(@*#)") == ["mul(1,2)", "mul(1,2)"]
+    pattern = f"{day3.PATTERN_MUL}"
+    assert day3.get_instructions("mul(1,2)", pattern) == ["mul(1,2)"]
+    assert day3.get_instructions("ul(1,2)", pattern) == []
+    assert day3.get_instructions("asdfmul(1,2))(@*#)", pattern) == ["mul(1,2)"]
+    assert day3.get_instructions("mul(1,2)mul(1,2))(@*#)", pattern) == [
+        "mul(1,2)",
+        "mul(1,2)",
+    ]
 
 
 def test_execute_instruction():
@@ -23,9 +27,10 @@ def test_part1():
 
 
 def test_get_instructions():
-    assert day3.get_instructions("do()") == ["do()"]
-    assert day3.get_instructions("don't()") == ["don't()"]
-    assert day3.get_instructions("mul(1,2)do()don't()mul(1,2)") == [
+    pattern = f"{day3.PATTERN_MUL}|{day3.PATTERN_DO}|{day3.PATTERN_DONT}"
+    assert day3.get_instructions("do()", pattern) == ["do()"]
+    assert day3.get_instructions("don't()", pattern) == ["don't()"]
+    assert day3.get_instructions("mul(1,2)do()don't()mul(1,2)", pattern) == [
         "mul(1,2)",
         "do()",
         "don't()",
