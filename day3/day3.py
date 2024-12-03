@@ -5,26 +5,23 @@ PATTERN_MUL = r"mul\(\d+,\d+\)"
 PATTERN_DO = r"do\(\)"
 PATTERN_DONT = r"don't\(\)"
 
-ENABLED = True
-
 
 def get_instructions(line, pattern):
     return re.findall(pattern, line)
 
 
-def execute_instruction(instruction):
-    global ENABLED
+def execute_instruction(instruction, do_mul):
     if instruction == "do()":
-        ENABLED = True
+        do_mul = True
     elif instruction == "don't()":
-        ENABLED = False
+        do_mul = False
     else:
-        if ENABLED:
+        if do_mul:
             match = re.search(r"(\d+),(\d+)", instruction)
             num1, num2 = map(int, match.groups())
-            return num1 * num2
+            return num1 * num2, True
 
-    return 0
+    return 0, do_mul
 
 
 def part1(filename):
@@ -41,4 +38,13 @@ def execute_program(lines, pattern):
     instructions = [
         instruction for line in lines for instruction in get_instructions(line, pattern)
     ]
-    return sum(execute_instruction(instruction) for instruction in instructions)
+
+    total_sum = 0
+    do_mul = True
+
+    for result, do_mul in (
+        execute_instruction(instruction, do_mul) for instruction in instructions
+    ):
+        total_sum += result
+
+    return total_sum

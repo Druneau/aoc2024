@@ -16,16 +16,6 @@ def test_regex_match_mul():
     ]
 
 
-def test_execute_instruction():
-    assert day3.execute_instruction("mul(1,2)") == 2
-    assert day3.execute_instruction("mul(11,8)") == 88
-
-
-def test_part1():
-    assert day3.part1(INPUT_EXAMPLE) == 161
-    assert day3.part1(INPUT) == 180233229
-
-
 def test_get_instructions():
     pattern = f"{day3.PATTERN_MUL}|{day3.PATTERN_DO}|{day3.PATTERN_DONT}"
     assert day3.get_instructions("do()", pattern) == ["do()"]
@@ -36,6 +26,20 @@ def test_get_instructions():
         "don't()",
         "mul(1,2)",
     ]
+
+
+def test_execute_instruction():
+    assert day3.execute_instruction("mul(1,2)", True) == (2, True)
+    assert day3.execute_instruction("mul(1,2)", False) == (0, False)
+    assert day3.execute_instruction("do()", False) == (0, True)
+    assert day3.execute_instruction("do()", True) == (0, True)
+    assert day3.execute_instruction("don't()", True) == (0, False)
+    assert day3.execute_instruction("don't()", False) == (0, False)
+
+
+def test_part1():
+    assert day3.part1(INPUT_EXAMPLE) == 161
+    assert day3.part1(INPUT) == 180233229
 
 
 def test_part2():
