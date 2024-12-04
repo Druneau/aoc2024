@@ -27,3 +27,12 @@ def test_read_file_as_strings():
     assert tools.file.read_file_as_strings("day3/input_example.txt") == [
         "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
     ]
+
+
+def test_read_file_as_chars():
+    assert tools.file.read_file_as_chars("day4/input_simple.txt") == [
+        ["X", "M", "A", "S"],
+        ["X", "M", "A", "S"],
+        ["X", "M", "A", "S"],
+        ["X", "M", "A", "S"],
+    ]

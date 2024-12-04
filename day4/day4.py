@@ -16,53 +16,41 @@ def get_verticals(lines):
 def get_diagonals(lines):
     num_rows = len(lines)
     num_cols = len(lines[0])
-    diagonals_lr = []  # Top-left to bottom-right
-    diagonals_rl = []  # Top-right to bottom-left
+    diagonals = []
 
     # Top-left to bottom-right diagonals
     for col_start in range(num_cols):
-        diagonals_lr.append(
-            "".join(
-                lines[row][col_start + row]
-                for row in range(num_rows)
-                if col_start + row < num_cols
-            )
-        )
+        diagonal = [
+            lines[row][col_start + row]
+            for row in range(min(num_rows, num_cols - col_start))
+        ]
+        diagonals.append("".join(diagonal))
     for row_start in range(1, num_rows):
-        diagonals_lr.append(
-            "".join(
-                lines[row_start + col][col]
-                for col in range(num_cols)
-                if row_start + col < num_rows
-            )
-        )
+        diagonal = [
+            lines[row_start + col][col]
+            for col in range(min(num_cols, num_rows - row_start))
+        ]
+        diagonals.append("".join(diagonal))
 
     # Top-right to bottom-left diagonals
     for col_start in range(num_cols):
-        diagonals_rl.append(
-            "".join(
-                lines[row][col_start - row]
-                for row in range(num_rows)
-                if col_start - row >= 0
-            )
-        )
+        diagonal = [
+            lines[row][col_start - row] for row in range(min(num_rows, col_start + 1))
+        ]
+        diagonals.append("".join(diagonal))
     for row_start in range(1, num_rows):
-        diagonals_rl.append(
-            "".join(
-                lines[row_start + col][num_cols - col - 1]
-                for col in range(num_cols)
-                if row_start + col < num_rows
-            )
-        )
+        diagonal = [
+            lines[row_start + col][num_cols - col - 1]
+            for col in range(min(num_cols, num_rows - row_start))
+        ]
+        diagonals.append("".join(diagonal))
 
-    return diagonals_lr + diagonals_rl
+    return diagonals
 
 
 def part1(filename):
     lines = read_file_as_strings(filename)
-
     lines = lines + get_verticals(lines) + get_diagonals(lines)
-
     return sum(word_search(line, PART1_MATCHES) for line in lines)
 
 

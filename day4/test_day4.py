@@ -1,7 +1,11 @@
 import day4
 from tools.file import read_file_as_strings
 
-INPUT_SIMPLE = read_file_as_strings("day4/input_simple.txt")
+PATH_INPUT_SIMPLE = "day4/input_simple.txt"
+PATH_INPUT_EXAMPLE = "day4/input_example.txt"
+PATH_INPUT = "day4/input.txt"
+
+INPUT_SIMPLE = read_file_as_strings(PATH_INPUT_SIMPLE)
 
 
 def test_word_search():
@@ -19,7 +23,7 @@ def test_decompose():
 
 
 def test_get_diagonals():
-    assert day4.get_diagonals(read_file_as_strings("day4/input_simple.txt")) == [
+    assert day4.get_diagonals(INPUT_SIMPLE) == [
         "XMAS",
         "MAS",
         "AS",
@@ -37,11 +41,6 @@ def test_get_diagonals():
     ]
 
 
-def test_part1():
-    assert day4.part1("day4/input_example.txt") == 18
-    assert day4.part1("day4/input.txt") == 2557
-
-
 def test_blocks():
     assert day4.get_blocks(INPUT_SIMPLE) == [
         ["XMA", "XMA", "XMA"],
@@ -51,7 +50,12 @@ def test_blocks():
     ]
 
 
+def test_part1():
+    assert day4.part1(PATH_INPUT_EXAMPLE) == 18
+    assert day4.part1(PATH_INPUT) == 2557
+
+
 def test_part2():
-    assert day4.part2("day4/input_simple.txt") == 2
-    assert day4.part2("day4/input_example.txt") == 9
-    assert day4.part2("day4/input.txt") == 1854
+    assert day4.part2(PATH_INPUT_SIMPLE) == 2
+    assert day4.part2(PATH_INPUT_EXAMPLE) == 9
+    assert day4.part2(PATH_INPUT) == 1854

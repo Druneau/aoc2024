@@ -33,3 +33,14 @@ def read_file_as_strings(filename):
     except Exception as e:
         print(f"An error occured: {e}")
     return result
+
+
+def read_file_as_chars(filename):
+    result = []
+    try:
+        with open(filename, "r") as file:
+            for line in file:
+                result.append(list(line.rstrip()))
+    except Exception as e:
+        print(f"An error occure: {e}")
+    return result
