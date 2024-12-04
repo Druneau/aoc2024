@@ -29,7 +29,7 @@ def read_file_as_strings(filename):
     try:
         with open(filename, "r") as file:
             for line in file:
-                result.append(line)
+                result.append(line.rstrip())
     except Exception as e:
         print(f"An error occured: {e}")
     return result
