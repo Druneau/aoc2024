@@ -23,14 +23,14 @@ def test_decompose():
 
 
 def test_get_diagonals():
-    assert day4.get_diagonals(INPUT_SIMPLE) == [
+    assert day4.get_diagonals_skew(INPUT_SIMPLE) == [
+        "X",
+        "XM",
+        "XMA",
         "XMAS",
         "MAS",
         "AS",
         "S",
-        "XMA",
-        "XM",
-        "X",
         "X",
         "MX",
         "AMX",
@@ -59,3 +59,12 @@ def test_part2():
     assert day4.part2(PATH_INPUT_SIMPLE) == 2
     assert day4.part2(PATH_INPUT_EXAMPLE) == 9
     assert day4.part2(PATH_INPUT) == 1854
+
+
+def test_skew():
+    assert day4.skew(["X", "M"], True, 2, 4) == ["", "", "X", "M"]
+    assert day4.skew(["X", "M"], True, 1, 4) == ["", "X", "M", ""]
+    assert day4.skew(["X", "M"], True, 0, 4) == ["X", "M", "", ""]
+    assert day4.skew(["X", "M"], False, 0, 4) == ["", "", "X", "M"]
+    assert day4.skew(["X", "M"], False, 1, 4) == ["", "X", "M", ""]
+    assert day4.skew(["X", "M"], False, 2, 4) == ["X", "M", "", ""]
