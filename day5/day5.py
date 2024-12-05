@@ -1,23 +1,21 @@
 from collections import defaultdict, deque
 
 
-def parse_rules(filepath):
-    pairs = []
+def parse_lines(filepath, delimiter, transform):
+    result = []
     with open(filepath, "r") as file:
         for line in file:
-            if "|" in line:
-                left, right = map(int, line.strip().split("|"))
-                pairs.append((left, right))
-    return pairs
+            if delimiter in line:
+                result.append(transform(line.strip().split(delimiter)))
+    return result
+
+
+def parse_rules(filepath):
+    return parse_lines(filepath, "|", lambda parts: tuple(map(int, parts)))
 
 
 def parse_updates(filepath):
-    updates = []
-    with open(filepath, "r") as file:
-        for line in file:
-            if "," in line:
-                updates.append(list(map(int, line.strip().split(","))))
-    return updates
+    return parse_lines(filepath, ",", lambda parts: list(map(int, parts)))
 
 
 def matching_rules(rules, pages):
