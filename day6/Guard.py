@@ -1,4 +1,5 @@
 import curses
+import time
 
 
 class Guard:
@@ -10,9 +11,11 @@ class Guard:
         self.bounds = bounds
         self.in_sight = True
         self.turns_count = 0
-        self.visited_positions = []
-        self.visited_positions.append(position)
+        self.visited_positions = set()
+        self.visited_positions.add(position)
         self.history = []  # Keep a history of moves for reverse stepping
+        self.loop_opportunity = set()
+        self.hit_obstructions = {}
 
     def is_in_sight(self, location=None):
         if location is None:
@@ -23,18 +26,39 @@ class Guard:
 
         return 0 <= x <= x_max and 0 <= y <= y_max
 
+    def record_hit_obstruction(self, obstruction_position):
+        """
+        Record an obstruction hit with the direction it was hit from.
+        """
+        if obstruction_position not in self.hit_obstructions:
+            self.hit_obstructions[obstruction_position] = set()
+        self.hit_obstructions[obstruction_position].add(self.direction)
+
+    def has_hit_obstruction(self, obstruction_position, direction):
+        """
+        Check if the obstruction at the given position was already hit from the specified direction.
+        """
+        return direction in self.hit_obstructions.get(obstruction_position, set())
+
     def step_forward(self):
         next_position = self.next_position()
 
         if next_position in self.obstructions:
+            self.record_hit_obstruction(next_position)
             self.turn_right()
         else:
             if self.is_in_sight(location=next_position):
+                if self.obstruction_right():
+                    if next_position not in self.obstructions:
+                        if next_position not in self.loop_opportunity:
+                            self.loop_opportunity.add(next_position)
+
                 self.history.append((self.position, self.direction))
                 self.position = next_position
                 self.steps_count += 1
-                if self.position not in self.visited_positions:
-                    self.visited_positions.append(self.position)
+                self.visited_positions.add(self.position)
+                self.in_sight = True
+
             else:
                 self.in_sight = False
 
@@ -56,65 +80,33 @@ class Guard:
             self.position[1] + self.direction[1],
         )
 
-    def print_map_old(self, stdscr):
+    def obstruction_right(self):
+        x, y = self.direction
+        right_direction = (-y, x)
+
+        current_position = self.position
+
+        while self.is_in_sight(current_position):
+            current_position = (
+                current_position[0] + right_direction[0],
+                current_position[1] + right_direction[1],
+            )
+
+            if self.has_hit_obstruction(current_position, right_direction):
+                return True
+
+        return False
+
+    def print_map(self, stdscr):
+
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
 
         stdscr.erase()
         max_y, max_x = stdscr.getmaxyx()
 
-        if self.bounds["y"] + 3 >= max_y or self.bounds["x"] + 1 >= max_x:
-            stdscr.addstr(0, 0, "Error: Terminal window too small for grid.")
-            stdscr.refresh()
-            return
-
-        # Draw the grid
-        for y in range(-1, self.bounds["y"] + 1):
-            for x in range(-1, self.bounds["x"] + 1):
-                screen_x, screen_y = x, y + 1
-                char = "."
-                if (x, y) == self.position:
-                    if self.direction == (1, 0):
-                        char = ">"
-                    elif self.direction == (0, 1):
-                        char = "v"
-                    elif self.direction == (0, -1):
-                        char = "^"
-                    elif self.direction == (-1, 0):
-                        char = "<"
-                elif (x, y) in self.obstructions:
-                    char = "#"
-                elif (x, y) in self.visited_positions:
-                    char = "X"
-
-                if 0 <= screen_y < max_y and 0 <= screen_x < max_x:
-                    stdscr.addch(screen_y, screen_x, char)
-
-        info = (
-            f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}"
-        )
-        stdscr.addstr(self.bounds["y"] + 2, 0, info[: max_x - 1])
-        stdscr.refresh()
-
-    def print_map(self, stdscr):
-        """
-        Draw the grid on the screen with color:
-        - Current guard position in red
-        - Obstructions in blue
-        """
-        curses.start_color()  # Enable color functionality
-        curses.init_pair(
-            1, curses.COLOR_RED, curses.COLOR_BLACK
-        )  # Guard position: Red on black
-        curses.init_pair(
-            2, curses.COLOR_BLUE, curses.COLOR_BLACK
-        )  # Obstructions: Blue on black
-        curses.init_pair(
-            3, curses.COLOR_WHITE, curses.COLOR_BLACK
-        )  # Default: White on black
-
-        stdscr.erase()  # Clear the screen before rendering
-        max_y, max_x = stdscr.getmaxyx()  # Get terminal size
-
-        # Check if the grid fits in the terminal
         if self.bounds["y"] + 3 >= max_y or self.bounds["x"] + 1 >= max_x:
             stdscr.addstr(
                 0, 0, "Error: Terminal window too small for grid.", curses.color_pair(3)
@@ -122,12 +114,11 @@ class Guard:
             stdscr.refresh()
             return
 
-        # Draw the grid
         for y in range(-1, self.bounds["y"] + 1):
             for x in range(-1, self.bounds["x"] + 1):
                 screen_x, screen_y = x, y + 1
                 char = "."
-                color = curses.color_pair(3)  # Default color
+                color = curses.color_pair(3)
 
                 if (x, y) == self.position:
                     if self.direction == (1, 0):
@@ -138,51 +129,36 @@ class Guard:
                         char = "^"
                     elif self.direction == (-1, 0):
                         char = "<"
-                    color = curses.color_pair(1)  # Red for guard position
+                    color = curses.color_pair(1)
                 elif (x, y) in self.obstructions:
                     char = "#"
-                    color = curses.color_pair(2)  # Blue for obstructions
+                    color = curses.color_pair(2)
                 elif (x, y) in self.visited_positions:
                     char = "X"
 
                 if 0 <= screen_y < max_y and 0 <= screen_x < max_x:
                     stdscr.addch(screen_y, screen_x, char, color)
 
-        # Add guard information
-        info = (
-            f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}"
-        )
+        info = f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}; l:{len(self.loop_opportunity)}"
         stdscr.addstr(self.bounds["y"] + 2, 0, info[: max_x - 1], curses.color_pair(3))
         stdscr.refresh()
 
     def update_map(self, stdscr, old_position):
-        """
-        Update only the necessary parts of the screen when the guard moves.
-        - Guard position in red
-        - Obstructions in blue
-        """
-        max_y, max_x = stdscr.getmaxyx()  # Get terminal size
+        max_y, max_x = stdscr.getmaxyx()
 
-        # Initialize colors (ensure this is called once in your main flow)
         curses.start_color()
-        curses.init_pair(
-            1, curses.COLOR_RED, curses.COLOR_BLACK
-        )  # Red for guard position
-        curses.init_pair(
-            2, curses.COLOR_BLUE, curses.COLOR_BLACK
-        )  # Blue for obstructions
-        curses.init_pair(
-            3, curses.COLOR_WHITE, curses.COLOR_BLACK
-        )  # Default (visited positions)
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
-        # Update the old position
         old_x, old_y = old_position
         if 0 <= old_y + 1 < max_y and 0 <= old_x < max_x:
-            stdscr.addch(
-                old_y + 1, old_x, "X", curses.color_pair(3)
-            )  # Visited position
+            if (old_x, old_y) in self.loop_opportunity:
+                stdscr.addch(old_y + 1, old_x, "O", curses.color_pair(4))
+            else:
+                stdscr.addch(old_y + 1, old_x, "X", curses.color_pair(3))
 
-        # Update the new position
         new_x, new_y = self.position
         if 0 <= new_y + 1 < max_y and 0 <= new_x < max_x:
             char = ">"
@@ -192,52 +168,28 @@ class Guard:
                 char = "^"
             elif self.direction == (-1, 0):
                 char = "<"
-            stdscr.addch(
-                new_y + 1, new_x, char, curses.color_pair(1)
-            )  # Guard position in red
+            stdscr.addch(new_y + 1, new_x, char, curses.color_pair(1))  # Guard in red
 
-        # Update obstructions (if any are dynamic, otherwise remove this block)
         for obs_x, obs_y in self.obstructions:
             if 0 <= obs_y + 1 < max_y and 0 <= obs_x < max_x:
-                stdscr.addch(
-                    obs_y + 1, obs_x, "#", curses.color_pair(2)
-                )  # Obstructions in blue
+                if (obs_x, obs_y) in self.hit_obstructions:
+                    stdscr.addch(obs_y + 1, obs_x, "#", curses.color_pair(1))
+                else:
+                    stdscr.addch(obs_y + 1, obs_x, "#", curses.color_pair(2))
 
-        # Update guard information
-        info = (
-            f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}"
-        )
-        if self.bounds["y"] + 2 < max_y:  # Ensure info fits within the screen
+        info = f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}; l:{len(self.loop_opportunity)}"
+        if self.bounds["y"] + 2 < max_y:
             stdscr.addstr(
                 self.bounds["y"] + 2, 0, info[: max_x - 1], curses.color_pair(3)
             )
 
-        stdscr.refresh()
+        status_y = self.bounds["y"] + 2
+        if status_y < max_y:
+            stdscr.move(status_y, 0)  # Move to the start of the status line
+            stdscr.clrtoeol()  # Clear from the cursor to the end of the line
 
-    def update_map_old(self, stdscr, old_position):
-
-        max_y, max_x = stdscr.getmaxyx()
-
-        old_x, old_y = old_position
-        if 0 <= old_y + 1 < max_y and 0 <= old_x < max_x:
-            stdscr.addch(old_y + 1, old_x, "X")
-
-        new_x, new_y = self.position
-        if 0 <= new_y + 1 < max_y and 0 <= new_x < max_x:
-            if self.direction == (1, 0):
-                stdscr.addch(new_y + 1, new_x, ">")
-            elif self.direction == (0, 1):
-                stdscr.addch(new_y + 1, new_x, "v")
-            elif self.direction == (0, -1):
-                stdscr.addch(new_y + 1, new_x, "^")
-            elif self.direction == (-1, 0):
-                stdscr.addch(new_y + 1, new_x, "<")
-
-        info = (
-            f"p:{self.position[0]},{self.position[1]}; v:{len(self.visited_positions)}"
-        )
-        if self.bounds["y"] + 2 < max_y:  # Ensure info fits within the screen
-            stdscr.addstr(self.bounds["y"] + 2, 0, info[: max_x - 1])
+        if status_y < max_y:
+            stdscr.addstr(status_y, 0, info[: max_x - 1], curses.color_pair(3))
 
         stdscr.refresh()
 
@@ -261,3 +213,4 @@ class Guard:
                 continue
 
             self.update_map(stdscr, old_position)
+            time.sleep(0.1)

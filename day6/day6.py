@@ -30,7 +30,7 @@ def generate_map(grid):
     return position, direction, obstructions, bounds
 
 
-def part1(filepath, interactive=False):
+def simulated_guard(filepath, interactive=False):
     grid = read_file_as_chars(filepath)
     position, direction, obstructions, bounds = generate_map(grid)
 
@@ -42,7 +42,17 @@ def part1(filepath, interactive=False):
         while guard.in_sight:
             guard.step_forward()
 
+    return guard
+
+
+def part1(filepath, interactive=False):
+    guard = simulated_guard(filepath, interactive)
     return len(guard.visited_positions)
+
+
+def part2(filepath):
+    guard = simulated_guard(filepath)
+    return len(guard.loop_opportunity)
 
 
 if __name__ == "__main__":

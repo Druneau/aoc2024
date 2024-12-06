@@ -64,3 +64,8 @@ def test_guard_no_obstructions():
 def test_part1():
     assert day6.part1("day6/input_example.txt") == 41
     assert day6.part1("day6/input.txt") > 4987
+
+
+def test_part2():
+    assert day6.part2("day6/input_example.txt") == 6
+    assert 1312 < day6.part2("day6/input.txt") < 1721
