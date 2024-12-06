@@ -15,32 +15,15 @@ def matching_rules(rules, pages):
     return [rule for rule in rules if rule[0] in set_pages and rule[1] in set_pages]
 
 
-def find_page_order(edges):
+def determine_print_order(rules):
 
-    pages_after = defaultdict(list)
-    count_pages_before = defaultdict(int)
+    incoming_pages_count = defaultdict(int)
 
-    for page_before, next_page in edges:
-        pages_after[page_before].append(next_page)
-        count_pages_before[next_page] += 1
-        count_pages_before.setdefault(page_before, 0)
+    for rule_left, rule_right in rules:
+        incoming_pages_count[rule_right] += 1
+        incoming_pages_count.setdefault(rule_left, 0)
 
-    # topological sort
-    ready_pages = deque(
-        [node for node in count_pages_before if count_pages_before[node] == 0]
-    )
-    page_order = []
-    while ready_pages:
-        current_page = ready_pages.popleft()
-        page_order.append(current_page)
-
-        for next_page in pages_after[current_page]:
-            count_pages_before[next_page] -= 1
-
-            if count_pages_before[next_page] == 0:
-                ready_pages.append(next_page)
-
-    return page_order
+    return sorted(incoming_pages_count, key=lambda k: incoming_pages_count[k])
 
 
 def process_updates(filepath, condition_fn):
@@ -50,7 +33,7 @@ def process_updates(filepath, condition_fn):
     total_sum = 0
     for update in updates:
         matches = matching_rules(rules, update)
-        order = find_page_order(matches)
+        order = determine_print_order(matches)
 
         if condition_fn(order, update):
             total_sum += order[len(order) // 2]
