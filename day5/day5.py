@@ -1,13 +1,5 @@
 from collections import defaultdict, deque
-
-
-def parse_lines(filepath, delimiter, transform):
-    result = []
-    with open(filepath, "r") as file:
-        for line in file:
-            if delimiter in line:
-                result.append(transform(line.strip().split(delimiter)))
-    return result
+from tools.file import parse_lines
 
 
 def parse_rules(filepath):

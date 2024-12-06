@@ -1,46 +1,37 @@
-def read_file_as_tuples(filename):
+def parse_lines(filepath, delimiter=None, transform=lambda x: x):
+
     result = []
-    try:
-        with open(filename, "r") as file:
-            for line in file:
-                parts = line.split()
-                if len(parts) == 2:
-                    result.append((int(parts[0]), int(parts[1])))
-                else:
-                    raise ValueError(f"Invalid line format: {line.strip()}")
-    except Exception as e:
-        print(f"An error occured: {e}")
+    with open(filepath, "r") as file:
+        for line in file:
+            line = line.strip()
+            if delimiter is None:
+                result.append(transform(line))
+            elif delimiter in line:
+                result.append(transform(line.split(delimiter)))
     return result
 
 
-def read_file_as_lists(filename):
-    result = []
-    try:
-        with open(filename, "r") as file:
-            for line in file:
-                result.append([int(val) for val in line.split()])
-    except Exception as e:
-        print(f"An error occured: {e}")
-    return result
+def read_file_as_tuples(filepath):
+    def transform(parts):
+        parts = parts.split()
+        if len(parts) == 2:
+            return int(parts[0]), int(parts[1])
+        raise ValueError(f"Invalid line format: {' '.join(parts)}")
+
+    return parse_lines(filepath, transform=transform)
 
 
-def read_file_as_strings(filename):
-    result = []
-    try:
-        with open(filename, "r") as file:
-            for line in file:
-                result.append(line.rstrip())
-    except Exception as e:
-        print(f"An error occured: {e}")
-    return result
+def read_file_as_lists(filepath):
+    return parse_lines(
+        filepath, delimiter=" ", transform=lambda parts: [int(val) for val in parts]
+    )
 
 
-def read_file_as_chars(filename):
-    result = []
-    try:
-        with open(filename, "r") as file:
-            for line in file:
-                result.append(list(line.rstrip()))
-    except Exception as e:
-        print(f"An error occure: {e}")
-    return result
+def read_file_as_strings(filepath):
+    return parse_lines(filepath)
+
+
+def read_file_as_chars(filepath):
+    return parse_lines(
+        filepath, delimiter=None, transform=lambda line: list(line.rstrip())
+    )
