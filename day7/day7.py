@@ -9,7 +9,9 @@ def parse_calibrations(lines):
 
 
 def evaluate_equation(answer, numbers, concat=False):
-    tree = build_tree(numbers[0], numbers, len(numbers) - 1, len(numbers), concat)
+    tree = build_tree(
+        numbers[0], numbers, len(numbers) - 1, len(numbers), concat, answer, [False]
+    )
     # print(f"a:{answer}")
     # pretty_print_tree(tree)
     return check_leaf_nodes(tree, answer)
@@ -38,15 +40,28 @@ def check_leaf_nodes(node, value):
     )
 
 
-def build_tree(value, values, current_depth, total_depth, concat=False):
+def build_tree(value, values, current_depth, total_depth, concat, answer, found_flag):
+
+    if found_flag[0]:
+        return None
+
     if current_depth == 0:
+        if value == answer:
+            found_flag[0] = True
         return Node(value)
+
     root = Node(value)
 
     child_value = values[total_depth - current_depth]
 
     root.left = build_tree(
-        value + child_value, values, current_depth - 1, total_depth, concat
+        value + child_value,
+        values,
+        current_depth - 1,
+        total_depth,
+        concat,
+        answer,
+        found_flag,
     )
     if concat:
         root.middle = build_tree(
@@ -55,9 +70,17 @@ def build_tree(value, values, current_depth, total_depth, concat=False):
             current_depth - 1,
             total_depth,
             concat,
+            answer,
+            found_flag,
         )
     root.right = build_tree(
-        value * child_value, values, current_depth - 1, total_depth, concat
+        value * child_value,
+        values,
+        current_depth - 1,
+        total_depth,
+        concat,
+        answer,
+        found_flag,
     )
     return root
 
