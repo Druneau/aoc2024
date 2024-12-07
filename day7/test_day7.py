@@ -53,3 +53,8 @@ def test_complex_cases():
 def test_part1():
     assert day7.part1("day7/input_example.txt") == 3749
     assert day7.part1("day7/input.txt") == 6392012777720
+
+
+def test_part2():
+    assert day7.part2("day7/input_example.txt") == 11387
+    assert day7.part2("day7/input.txt") == 61561126043536
