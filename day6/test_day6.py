@@ -68,4 +68,4 @@ def test_part1():
 
 def test_part2():
     assert day6.part2("day6/input_example.txt") == 6
-    assert 1312 < day6.part2("day6/input.txt") < 1721
+    assert day6.part2("day6/input.txt") == 1697
