@@ -35,3 +35,8 @@ def read_file_as_chars(filepath):
     return parse_lines(
         filepath, delimiter=None, transform=lambda line: list(line.rstrip())
     )
+
+
+def read_file_as_string(filepath):
+    with open(filepath, "r") as file:
+        return file.read()
