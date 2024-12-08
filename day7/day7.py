@@ -49,6 +49,8 @@ def build_tree(value, values, current_depth, total_depth, concat, answer, found_
         if value == answer:
             found_flag[0] = True
         return Node(value)
+    elif value > answer:
+        return Node(value)
 
     root = Node(value)
 
