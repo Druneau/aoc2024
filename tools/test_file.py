@@ -36,3 +36,10 @@ def test_read_file_as_chars():
         ["X", "M", "A", "S"],
         ["X", "M", "A", "S"],
     ]
+
+
+def test_read_file_as_dict():
+    assert tools.file.read_file_as_dict("day8/input_example.txt", ignore_char=".") == {
+        "0": [(8, 1), (5, 2), (7, 3), (4, 4)],
+        "A": [(6, 5), (8, 8), (9, 9)],
+    }

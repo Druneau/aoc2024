@@ -40,3 +40,15 @@ def read_file_as_chars(filepath):
 def read_file_as_string(filepath):
     with open(filepath, "r") as file:
         return file.read()
+
+
+def read_file_as_dict(file_path, ignore_char=""):
+    result = {}
+    with open(file_path, "r") as file:
+        for y, line in enumerate(file):
+            line = line.strip()
+            for x, char in enumerate(line):
+                if not char == ignore_char:
+                    result.setdefault(char, []).append((x, y))
+    print(result)
+    return result
