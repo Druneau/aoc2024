@@ -50,5 +50,12 @@ def read_file_as_dict(file_path, ignore_char=""):
             for x, char in enumerate(line):
                 if not char == ignore_char:
                     result.setdefault(char, []).append((x, y))
-    print(result)
     return result
+
+
+def read_file_grid_size(filepath):
+    with open(filepath, "r") as file:
+        lines = file.readlines()
+        line_count = len(lines)
+        line_length = len(lines[0].strip())
+        return (line_length, line_count)
