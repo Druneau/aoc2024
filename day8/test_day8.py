@@ -27,3 +27,8 @@ def test_in_bounds():
 def test_part1():
     assert day8.part1("day8/input_example.txt") == 14
     assert day8.part1("day8/input.txt") == 323
+
+
+def test_part2():
+    assert day8.part2("day8/input_example.txt") == 34
+    assert day8.part2("day8/input.txt") == 1077
