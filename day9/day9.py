@@ -2,18 +2,17 @@ from collections import deque
 from tools.file import read_file_as_string
 
 
-def to_blocks(disk_map):
+def to_blocks(disk_map: list[int]) -> list[int | str]:
     blocks = []
-
     file_count = 0
 
-    for id, block in enumerate(disk_map):
-        block = int(block)
-        if id % 2 == 0:
-            blocks.extend(block * [file_count])
+    for index, block_count in enumerate(disk_map):
+        block_count = int(block_count)
+        if index % 2 == 0:
+            blocks.extend([file_count] * block_count)
             file_count += 1
         else:
-            blocks.extend(block * ["."])
+            blocks.extend(["."] * block_count)
 
     return blocks
 
@@ -24,14 +23,12 @@ def compact(blocks):
 
     blocks = deque(blocks)
 
-    while len(blocks) > 0:
+    while blocks:
         left_block = blocks.popleft()
 
         if left_block == ".":
             free_space_count += 1
-            if not blocks:
-                break
-            while blocks[-1] == ".":
+            while blocks and blocks[-1] == ".":
                 blocks.pop()
                 free_space_count += 1
                 if not blocks:
@@ -41,18 +38,11 @@ def compact(blocks):
         else:
             compacted_blocks.append(left_block)
 
-    # compacted_blocks.extend((free_space_count) * ".")
-
     return compacted_blocks
 
 
-def checksum(compacted_blocks):
-    checksum = 0
-
-    for index, id in enumerate(compacted_blocks):
-        checksum += index * id
-
-    return checksum
+def checksum(compacted_blocks: list[int]) -> int:
+    return sum(index * block for index, block in enumerate(compacted_blocks))
 
 
 def part1(filepath):
