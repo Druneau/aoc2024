@@ -3,6 +3,8 @@ from tools.file import read_file_as_string
 from itertools import chain
 import time
 
+FREE_SPACE_CHAR = "."
+
 
 def to_blocks(disk_map: list[int]) -> list[int | str]:
     blocks = []
@@ -14,7 +16,7 @@ def to_blocks(disk_map: list[int]) -> list[int | str]:
             blocks.extend([file_count] * block_count)
             file_count += 1
         else:
-            blocks.extend(["."] * block_count)
+            blocks.extend([FREE_SPACE_CHAR] * block_count)
 
     return blocks
 
@@ -28,9 +30,9 @@ def per_block_compact(blocks):
     while blocks:
         left_block = blocks.popleft()
 
-        if left_block == ".":
+        if left_block == FREE_SPACE_CHAR:
             free_space_count += 1
-            while blocks and blocks[-1] == ".":
+            while blocks and blocks[-1] == FREE_SPACE_CHAR:
                 blocks.pop()
                 free_space_count += 1
                 if not blocks:
@@ -81,9 +83,10 @@ def insert_file(file, free_space):
     free_id, free_length, free_data = free_space
 
     if length <= free_length:
-        extra_free_space = (free_id + length, free_length - length, free_data)
-        freed_space = (file_id, length, free_data)
-        free = [extra_free_space, freed_space]
+        free = [
+            (free_id + length, free_length - length, free_data),
+            (file_id, length, free_data),
+        ]
         file = (free_id, length, data)
     else:
         free = [free_space]
@@ -92,34 +95,27 @@ def insert_file(file, free_space):
 
 
 def per_file_compact(files):
-    files_set = set(files)
+    files = sorted(files, key=lambda f: f[0], reverse=True)
     compacted_set = set()
 
-    while files_set:
-        # get las file
-        file = max(files_set, key=lambda f: f[0])
+    while files:
+        file = files.pop(0)
+        _, length, data = file
 
-        index, length, data = file
-
-        if data == ".":
+        if data == FREE_SPACE_CHAR:
             compacted_set.add(file)
-            files_set.remove(file)
         else:
-            space = find_space(length, files_set)
+            space = find_space(length, files)
             if space:
-                files_set.remove(file)
+                files.remove(space)
                 file, space_fragments = insert_file(file, space)
 
-                space_left, space_used = chain(space_fragments, [])
-
+                space_left, space_used = space_fragments
                 compacted_set.add(file)
-
                 compacted_set.add(space_used)
-                files_set.remove(space)
-                files_set.add(space_left)
-
+                files.append(space_left)
+                files.sort(key=lambda f: f[0], reverse=True)
             else:
-                files_set.remove(file)
                 compacted_set.add(file)
 
     compacted_files = sorted(compacted_set, key=lambda f: f[0])
@@ -128,7 +124,9 @@ def per_file_compact(files):
 
 
 def find_space(space_length, files):
-    available_spaces = [f for f in files if f[1] >= space_length and f[2] == "."]
+    available_spaces = [
+        f for f in files if f[1] >= space_length and f[2] == FREE_SPACE_CHAR
+    ]
 
     if available_spaces:
         return min(available_spaces, key=lambda f: f[0])
@@ -144,16 +142,26 @@ def checksum(compacted_blocks: list[int | str]) -> int:
     )
 
 
-def part1(filepath):
+def chain_functions(*functions):
+    def chained(data):
+        for func in functions:
+            data = func(data)
+        return data
+
+    return chained
+
+
+def process_disk(filepath, compact_function):
     disk_map = read_file_as_string(filepath)
-    blocks = to_blocks(disk_map)
-    compacted_blocks = per_block_compact(blocks)
-    return checksum(compacted_blocks)
+    blocks = compact_function(disk_map)
+    return checksum(blocks)
+
+
+def part1(filepath):
+    return process_disk(filepath, chain_functions(to_blocks, per_block_compact))
 
 
 def part2(filepath):
-    disk_map = read_file_as_string(filepath)
-    blocks = to_blocks(disk_map)
-    files = blocks_to_files(blocks)
-    compacted_blocks = per_file_compact(files)
-    return checksum(compacted_blocks)
+    return process_disk(
+        filepath, chain_functions(to_blocks, blocks_to_files, per_file_compact)
+    )
