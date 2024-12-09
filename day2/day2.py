@@ -33,12 +33,14 @@ def report_is_safe(report, allow_dampen=False):
     return False
 
 
-def part1(filename):
-    reports = read_file_as_lists(filename)
-    return sum(1 for r in reports if report_is_safe(r))
+def analyze_data(filepath, allow_dampen=False):
+    reports = read_file_as_lists(filepath)
+    return sum(1 for r in reports if report_is_safe(r, allow_dampen))
 
 
-def part2(filename):
-    reports = read_file_as_lists(filename)
+def part1(filepath):
+    return analyze_data(filepath)
 
-    return sum(1 for r in reports if report_is_safe(r, allow_dampen=True))
+
+def part2(filepath):
+    return analyze_data(filepath, allow_dampen=True)
