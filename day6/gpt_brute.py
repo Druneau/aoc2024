@@ -138,7 +138,7 @@ def part2(filepath):
     valid_positions = find_valid_obstructions(position, direction, obstructions, bounds)
 
     print(f"Number of valid obstruction positions: {len(valid_positions)}")
-    return valid_positions
+    return len(valid_positions)
 
 
 if __name__ == "__main__":
