@@ -11,39 +11,30 @@ def get_trailhead_locations(topo_map):
     ]
 
 
-def get_valid_neighbors(array, row, col):
-    neighbors = []
-    rows, cols = len(array), len(array[0])
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+def get_valid_neighbors(topo_map, row, col):
+    rows, cols = len(topo_map), len(topo_map[0])
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    current_value = array[row][col]
-    for dr, dc in directions:
-        nr, nc = row + dr, col + dc
-        if 0 <= nr < rows and 0 <= nc < cols:  # Check bounds
-            neighbor_value = array[nr][nc]
-            if neighbor_value == current_value + 1:  # Condition: value must be +1
-                neighbors.append((nr, nc))
-
-    return neighbors
+    current_value = topo_map[row][col]
+    return [
+        (nr, nc)
+        for dr, dc in directions
+        if 0 <= (nr := row + dr) < rows
+        and 0 <= (nc := col + dc) < cols
+        and topo_map[nr][nc] == current_value + 1
+    ]
 
 
-def build_graph(array, start):
+def build_graph(topo_map, start):
     edges = {}
     queue = [start]
 
     while queue:
         current = queue.pop(0)
+        neighbors = get_valid_neighbors(topo_map, *current)
 
-        row, col = current
-        neighbors = get_valid_neighbors(array, row, col)
-
-        # Always add the current node to the edges
-        if current not in edges:
-            edges[current] = []
-
-        for neighbor in neighbors:
-            queue.append(neighbor)
-            edges[current].append(neighbor)  # Add valid neighbors to edges
+        queue.extend(neighbors)
+        edges.setdefault(current, []).extend(neighbors)
 
     return edges
 
@@ -73,55 +64,49 @@ def pretty_print_graph(graph, array, start, visited=None, prefix="", is_last=Tru
         )
 
 
-def count_valid_trails(visited_values, topo_map):
+def count_valid_trails(trail_graph, topo_map):
     count = 0
-    flattened_items = [item for items in visited_values.values() for item in items]
+    flattened_items = [item for items in trail_graph.values() for item in items]
     for row, col in flattened_items:
         if topo_map[row][col] == 9:
             count += 1
     return count
 
 
-def count_dead_ends_with_value_9(graph, array):
+def count_dead_ends_with_value_9(graph, topo_map):
     count = 0
     for node, neighbors in graph.items():
         if not neighbors:
             row, col = node
-            if array[row][col] == 9:
+            if topo_map[row][col] == 9:
                 count += 1
     return count
 
 
-def part1(filepath):
+def process_trailheads(filepath, value_count_func=None):
     array = read_file_as_lists(filepath, delimeter=None)
     topo_map = np.array(array)
 
+    total = 0
     trailheads = get_trailhead_locations(topo_map)
-
-    total_score = 0
 
     for trailhead in trailheads:
         trail_graph = build_graph(topo_map, trailhead)
-        score = count_dead_ends_with_value_9(trail_graph, topo_map)
-        total_score += score
+        score = value_count_func(trail_graph, topo_map)
+        total += score
 
-    return total_score
+    return total
+
+
+def part1(filepath):
+    return process_trailheads(
+        filepath,
+        value_count_func=count_dead_ends_with_value_9,
+    )
 
 
 def part2(filepath):
-    array = read_file_as_lists(
+    return process_trailheads(
         filepath,
-        delimeter=None,
-        transform=lambda parts: [int(val) if val != "." else -1 for val in parts],
+        value_count_func=count_valid_trails,
     )
-    topo_map = np.array(array)
-
-    sum_ratings = 0
-
-    trailheads = get_trailhead_locations(topo_map)
-    for trailhead in trailheads:
-        trail_graph = build_graph(topo_map, trailhead)
-        ratings = count_valid_trails(trail_graph, topo_map)
-        sum_ratings += ratings
-
-    return sum_ratings
