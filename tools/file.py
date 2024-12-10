@@ -20,10 +20,10 @@ def read_file_as_tuples(filepath):
     return parse_lines(filepath, transform=transform)
 
 
-def read_file_as_lists(filepath, delimeter=" "):
-    return parse_lines(
-        filepath, delimeter, transform=lambda parts: [int(val) for val in parts]
-    )
+def read_file_as_lists(
+    filepath, delimeter=" ", transform=lambda parts: [int(val) for val in parts]
+):
+    return parse_lines(filepath, delimeter, transform)
 
 
 def read_file_as_strings(filepath):
