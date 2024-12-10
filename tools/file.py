@@ -1,5 +1,4 @@
 def parse_lines(filepath, delimiter=None, transform=lambda x: x):
-
     result = []
     with open(filepath, "r") as file:
         for line in file:
@@ -21,9 +20,9 @@ def read_file_as_tuples(filepath):
     return parse_lines(filepath, transform=transform)
 
 
-def read_file_as_lists(filepath):
+def read_file_as_lists(filepath, delimeter=" "):
     return parse_lines(
-        filepath, delimiter=" ", transform=lambda parts: [int(val) for val in parts]
+        filepath, delimeter, transform=lambda parts: [int(val) for val in parts]
     )
 
 

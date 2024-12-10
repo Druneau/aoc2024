@@ -1,3 +1,3 @@
 def print_array(array):
     for line in array:
-        print("".join(line))
+        print("".join(map(str, line)))
