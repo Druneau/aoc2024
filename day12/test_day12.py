@@ -43,7 +43,22 @@ def test_get_regions():
     }
 
 
-def test_calculate_price():
-    assert day12.calculate_price(INPUT_EXAMPLE) == 1930
-    assert day12.calculate_price(INPUT_EXAMPLE) == 1930
-    assert day12.calculate_price(INPUT) == 1370100
+def test_part1():
+    assert day12.part1("day12/input_example.txt") == 1930
+    assert day12.part1("day12/input.txt") == 1370100
+
+
+def test_get_fence():
+    assert day12.get_fence_map({(1, 1): []}, "O") == (
+        [
+            [".", "*", "."],
+            ["*", "O", "*"],
+            [".", "*", "."],
+        ],
+        0,
+    )
+
+
+def test_part2():
+    # assert day12.part2("day12/input_example.txt") == 1206
+    assert day12.part2("day12/input.txt") == 1206
