@@ -49,16 +49,18 @@ def test_part1():
 
 
 def test_get_fence():
-    assert day12.get_fence_map({(1, 1): []}, "O") == (
-        [
-            [".", "*", "."],
-            ["*", "O", "*"],
-            [".", "*", "."],
-        ],
-        0,
-    )
+    assert day12.get_fence_map({(1, 1): []}, "O") == [
+        [".", "*", "."],
+        ["*", "O", "*"],
+        [".", "*", "."],
+    ]
+
+
+def test_perimeter_scan():
+    fence_map = day12.get_fence_map({(1, 1): []}, "O")
+    assert day12.perimeter_scan(fence_map) == 4
 
 
 def test_part2():
-    # assert day12.part2("day12/input_example.txt") == 1206
-    assert day12.part2("day12/input.txt") == 1206
+    assert day12.part2("day12/input_example.txt") == 1206
+    # assert day12.part2("day12/input.txt") > 817337

@@ -1,6 +1,5 @@
 from tools.file import read_file_as_chars
 from tools.print import print_array
-from collections import Counter
 
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
@@ -81,16 +80,15 @@ def calculate_region_price(region, id):
 
 def calculate_bulk_region_price(region, id):
     area = len(region)
-    fence_map, overlaps = get_fence_map(region, id[0])
+    fence_map = get_fence_map(region, id[0])
 
-    # need to count how many regions of type "F" FOR FENCE!
-    fence_regions = get_regions(fence_map)
+    # need to scan fence_map line by line horizontally and vertically, counting up perimeter
 
-    perimeter = sum(1 for f in fence_regions.keys() if f.startswith("*"))
+    perimeter = perimeter_scan(fence_map)
 
-    print(f"a:{area} * p:{perimeter+overlaps} = {area *(perimeter+overlaps)}")
+    print(f"a:{area} * p:{perimeter} = {area *(perimeter)}")
 
-    return area * (perimeter + overlaps)
+    return area * (perimeter)
 
 
 def calculate_bulk_price(garden_map):
@@ -128,14 +126,52 @@ def get_fence_map(region, id):
                 map_row.append(".")
         fence_map.append(map_row)
     print_array(fence_map)
-    return (fence_map, count_duplicates(fence_pieces))
+    return fence_map
 
 
-def count_duplicates(values):
-    counts = Counter(values)
-    doubles = sum(1 for count in counts.values() if count == 2)
-    triples = sum(1 for count in counts.values() if count == 3)
-    return [doubles, triples]
+def nearby_plots(row_idx, col_idx, fence_map):
+    char = fence_map[row_idx][col_idx]
+    if char != "*":
+        return False, False
+
+    above_match = False
+    below_match = False
+    if row_idx > 0:
+        above_char = fence_map[row_idx - 1][col_idx]
+        above_match = above_char != "*" and above_char != "."
+
+    if row_idx < len(fence_map) - 1:
+        below_char = fence_map[row_idx + 1][col_idx]
+        below_match = below_char != "*" and below_char != "."
+    return above_match, below_match
+
+
+def scan_count(fence_map):
+    perimeter = 0
+    for row_idx, row in enumerate(fence_map):
+        above = None
+        below = None
+        for col_idx, char in enumerate(row):
+            if char == "*":
+                cur_above, cur_below = nearby_plots(row_idx, col_idx, fence_map)
+                if cur_above and above is None:
+                    above = True
+                    perimeter += 1
+                if cur_below and below is None:
+                    below = 1
+                    perimeter += 1
+            else:
+                above = None
+                below = None
+    return perimeter
+
+
+def perimeter_scan(fence_map):
+    row_perimeter = scan_count(fence_map)
+    transposed_fence_map = list(zip(*fence_map))
+    col_perimeter = scan_count(transposed_fence_map)
+
+    return row_perimeter + col_perimeter
 
 
 def calculate_price(garden_map):
@@ -150,6 +186,5 @@ def part1(filepath):
 
 
 def part2(filepath):
-    print("asdf")
     garden_map = read_file_as_chars(filepath)
     return calculate_bulk_price(garden_map)
