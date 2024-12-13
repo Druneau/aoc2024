@@ -1,5 +1,4 @@
 from tools.file import read_file_as_chars
-from tools.print import print_array
 
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
@@ -72,28 +71,18 @@ def find_disconnected_regions(plot_type):
 def calculate_region_price(region, id):
     perimeter = sum(4 - len(values) for values in region.values())
     area = len(region)
-
-    # print(f"{id}, {area} * {perimeter} = {perimeter * area}")
-
     return perimeter * area
 
 
 def calculate_bulk_region_price(region, id):
     area = len(region)
     fence_map = get_fence_map(region, id[0])
-
-    # need to scan fence_map line by line horizontally and vertically, counting up perimeter
-
     perimeter = perimeter_scan(fence_map)
-
-    print(f"a:{area} * p:{perimeter} = {area *(perimeter)}")
-
-    return area * (perimeter)
+    return area * perimeter
 
 
 def calculate_bulk_price(garden_map):
     regions = get_regions(garden_map)
-
     return sum(calculate_bulk_region_price(regions[r], r) for r in regions)
 
 
@@ -125,14 +114,14 @@ def get_fence_map(region, id):
             else:
                 map_row.append(".")
         fence_map.append(map_row)
-    print_array(fence_map)
+    # print_array(fence_map)
     return fence_map
 
 
 def nearby_plots(row_idx, col_idx, fence_map):
     char = fence_map[row_idx][col_idx]
     if char != "*":
-        return False, False
+        return None, None
 
     above_match = False
     below_match = False
@@ -149,20 +138,20 @@ def nearby_plots(row_idx, col_idx, fence_map):
 def scan_count(fence_map):
     perimeter = 0
     for row_idx, row in enumerate(fence_map):
-        above = None
-        below = None
+        above = False
+        below = False
         for col_idx, char in enumerate(row):
             if char == "*":
                 cur_above, cur_below = nearby_plots(row_idx, col_idx, fence_map)
-                if cur_above and above is None:
-                    above = True
+                if cur_above and not above:
                     perimeter += 1
-                if cur_below and below is None:
-                    below = 1
+                if cur_below and not below:
                     perimeter += 1
+                above = cur_above
+                below = cur_below
             else:
-                above = None
-                below = None
+                above = False
+                below = False
     return perimeter
 
 

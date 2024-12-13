@@ -57,10 +57,15 @@ def test_get_fence():
 
 
 def test_perimeter_scan():
-    fence_map = day12.get_fence_map({(1, 1): []}, "O")
-    assert day12.perimeter_scan(fence_map) == 4
+    fence_map = read_file_as_chars("day12/fence_56.txt")
+    assert day12.perimeter_scan(fence_map) == 56
+    fence_map = read_file_as_chars("day12/fence_82.txt")
+    assert day12.perimeter_scan(fence_map) == 82
 
 
 def test_part2():
     assert day12.part2("day12/input_example.txt") == 1206
-    # assert day12.part2("day12/input.txt") > 817337
+    assert day12.part2("day12/input_80.txt") == 80
+    assert day12.part2("day12/input_236.txt") == 236
+    assert day12.part2("day12/input_368.txt") == 368
+    assert day12.part2("day12/input.txt") == 818286
