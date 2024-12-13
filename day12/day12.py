@@ -20,14 +20,15 @@ def get_valid_touching(garden_map, plot):
 def get_plots(garden_map) -> dict:
     plots_by_type = {}
 
-    height = len(garden_map)
-    width = len(garden_map[0])
-    for row in range(height):
-        for col in range(width):
-            current_plot = garden_map[row][col]
+    for row, garden_row in enumerate(garden_map):
+        for col, current_plot in enumerate(garden_row):
             valid_touching = get_valid_touching(garden_map, (row, col))
-            dict_current_plot = plots_by_type.setdefault(current_plot, {})
-            dict_current_plot.setdefault((row, col), valid_touching)
+
+            if current_plot not in plots_by_type:
+                plots_by_type[current_plot] = {}
+
+            if (row, col) not in plots_by_type[current_plot]:
+                plots_by_type[current_plot][(row, col)] = valid_touching
 
     return plots_by_type
 
@@ -36,10 +37,10 @@ def get_regions(garden_map) -> dict:
     regions = {}
     plots_by_type = get_plots(garden_map)
 
-    for type, plots in plots_by_type.items():
+    for plot_type, plots in plots_by_type.items():
         split_plots = find_disconnected_regions(plots)
-        for id, r in enumerate(split_plots):
-            regions.setdefault(type + "." + str(id), r)
+        for region_id, region in enumerate(split_plots):
+            regions[f"{plot_type}.{region_id}"] = region
 
     return regions
 
@@ -68,15 +69,15 @@ def find_disconnected_regions(plot_type):
     return components
 
 
-def calculate_region_price(region, id):
-    perimeter = sum(4 - len(values) for values in region.values())
+def calculate_region_price(region):
+    perimeter = sum(4 - len(neighbors) for neighbors in region.values())
     area = len(region)
     return perimeter * area
 
 
-def calculate_bulk_region_price(region, id):
+def calculate_bulk_region_price(region, region_id):
     area = len(region)
-    fence_map = get_fence_map(region, id[0])
+    fence_map = get_fence_map(region, region_id[0])
     perimeter = perimeter_scan(fence_map)
     return area * perimeter
 
@@ -86,87 +87,74 @@ def calculate_bulk_price(garden_map):
     return sum(calculate_bulk_region_price(regions[r], r) for r in regions)
 
 
-def get_fence_map(region, id):
+def get_fence_map(region, region_id):
     plots = set(region.keys())
-    fence_pieces = []
+    fence_pieces = {
+        (row + dr, col + dc)
+        for row, col in plots
+        for dr, dc in DIRECTIONS
+        if (row + dr, col + dc) not in plots
+    }
 
-    for row, col in plots:
-        for dr, dc in DIRECTIONS:
-            neighbor = (row + dr, col + dc)
-            if neighbor not in plots:
-                fence_pieces.append(neighbor)
+    min_row = min(r for r, _ in fence_pieces)
+    max_row = max(r for r, _ in fence_pieces)
+    min_col = min(c for _, c in fence_pieces)
+    max_col = max(c for _, c in fence_pieces)
 
-    # build a fence map!
-    max_col = max(piece[1] for piece in fence_pieces)
-    max_row = max(piece[0] for piece in fence_pieces)
-    min_col = min(piece[1] for piece in fence_pieces)
-    min_row = min(piece[0] for piece in fence_pieces)
-    fence_map = []
+    fence_map = [
+        [
+            "*"
+            if (row, col) in fence_pieces
+            else region_id
+            if (row, col) in plots
+            else "."
+            for col in range(min_col, max_col + 1)
+        ]
+        for row in range(min_row, max_row + 1)
+    ]
 
-    for row in range(min_row, max_row + 1):
-        map_row = []
-        for col in range(min_col, max_col + 1):
-            current_plot = (row, col)
-            if current_plot in fence_pieces:
-                map_row.append("*")
-            elif current_plot in plots:
-                map_row.append(id)
-            else:
-                map_row.append(".")
-        fence_map.append(map_row)
-    # print_array(fence_map)
     return fence_map
 
 
-def nearby_plots(row_idx, col_idx, fence_map):
-    char = fence_map[row_idx][col_idx]
-    if char != "*":
-        return None, None
-
-    above_match = False
-    below_match = False
-    if row_idx > 0:
-        above_char = fence_map[row_idx - 1][col_idx]
-        above_match = above_char != "*" and above_char != "."
-
-    if row_idx < len(fence_map) - 1:
-        below_char = fence_map[row_idx + 1][col_idx]
-        below_match = below_char != "*" and below_char != "."
+def nearby_plots(r_id, c_id, fence_map):
+    above_match = r_id > 0 and fence_map[r_id - 1][c_id] not in {"*", "."}
+    below_match = r_id < len(fence_map) - 1 and fence_map[r_id + 1][c_id] not in {
+        "*",
+        ".",
+    }
     return above_match, below_match
 
 
-def scan_count(fence_map):
+def top_down_fence_count(fence_map):
     perimeter = 0
+
     for row_idx, row in enumerate(fence_map):
-        above = False
-        below = False
+        above, below = False, False
+
         for col_idx, char in enumerate(row):
             if char == "*":
                 cur_above, cur_below = nearby_plots(row_idx, col_idx, fence_map)
+
                 if cur_above and not above:
                     perimeter += 1
                 if cur_below and not below:
                     perimeter += 1
-                above = cur_above
-                below = cur_below
+                above, below = cur_above, cur_below
             else:
-                above = False
-                below = False
+                above, below = False, False
     return perimeter
 
 
 def perimeter_scan(fence_map):
-    row_perimeter = scan_count(fence_map)
-    transposed_fence_map = list(zip(*fence_map))
-    col_perimeter = scan_count(transposed_fence_map)
-
+    row_perimeter = top_down_fence_count(fence_map)
+    rotated_fence_map = list(zip(*fence_map))
+    col_perimeter = top_down_fence_count(rotated_fence_map)
     return row_perimeter + col_perimeter
 
 
 def calculate_price(garden_map):
     regions = get_regions(garden_map)
-
-    return sum(calculate_region_price(regions[r], r) for r in regions)
+    return sum(calculate_region_price(regions[r]) for r in regions)
 
 
 def part1(filepath):
