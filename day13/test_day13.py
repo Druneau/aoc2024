@@ -8,4 +8,8 @@ def test_solve_a_b():
 
 def test_part1():
     assert day13.part1("day13/input_example.txt") == 480
-    assert day13.part1("day13/input.txt") == 480
+    assert day13.part1("day13/input.txt") == 29877
+
+
+def test_part2():
+    assert day13.part2("day13/input.txt") == 99423413811305
