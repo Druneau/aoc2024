@@ -43,3 +43,7 @@ def test_pos_after_seconds():
 def test_part1():
     assert day14.part1(PATH_EXAMPLE, (11, 7)) == 12
     assert day14.part1(PATH_INPUT, (101, 103)) == 216027840
+
+
+def test_part2():
+    assert day14.part2(PATH_INPUT, (101, 103)) == 6876

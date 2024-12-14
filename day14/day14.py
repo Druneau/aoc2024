@@ -1,9 +1,8 @@
 from collections import OrderedDict
 from tools.file import read_file_as_strings
 import re
-
 import os
-from tools.print import print_array
+from itertools import groupby
 
 INPUT_PATTERN = r"([-]*\d+)"
 
@@ -93,34 +92,39 @@ def clear_screen():
     os.system("clear")
 
 
-def print_map(locations, map_size, seconds):
+def longest_streak_robots(chars):
+    if "O" not in chars:
+        return ("O", 0)
+    return max(
+        (
+            (char, sum(1 for _ in group))
+            for char, group in groupby(chars)
+            if char == "O"
+        ),
+        key=lambda x: x[1],
+    )
+
+
+def scan_map_sequential_robots(locations, map_size, seconds):
     unique_locations = set(locations)
     size_x, size_y = map_size
 
     # we're gonna try to find straight lines with lots of robots...
     # should probably find a more direct way.. but this worked!
 
-    max_robots_in_row = 0
-
-    this_map = []
+    max_sequential_robots_in_row = 0
 
     for y in range(size_y):
         row = []
-        robots_in_row = 0
         for x in range(size_x):
             if (x, y) in unique_locations:
                 row.append("O")
-                robots_in_row += 1
             else:
                 row.append(".")
-        max_robots_in_row = max(max_robots_in_row, robots_in_row)
-        this_map.append(row)
-
-    if max_robots_in_row == 32:
-        print_array(this_map)
-        print(f"{seconds} elapsed")
-        input("Press enter for next map")
-        clear_screen()
+        max_sequential_robots_in_row = max(
+            max_sequential_robots_in_row, longest_streak_robots(row)[1]
+        )
+    return max_sequential_robots_in_row
 
 
 def part2(filepath, map_size):
@@ -130,11 +134,19 @@ def part2(filepath, map_size):
 
     distinct_maps = zip(*robot_positions)
 
-    for seconds, robot_map in enumerate(distinct_maps):
-        print_map(robot_map, map_size, seconds)
+    easter_egg_seconds = 0
+    max_sequential_robot_count = 0
 
-    return 0
+    for seconds, robot_map in enumerate(distinct_maps):
+        sequential_robot_count = scan_map_sequential_robots(
+            robot_map, map_size, seconds
+        )
+        if sequential_robot_count > max_sequential_robot_count:
+            easter_egg_seconds = seconds
+            max_sequential_robot_count = sequential_robot_count
+
+    return easter_egg_seconds
 
 
 if __name__ == "__main__":
-    part2("day14/input.txt", (101, 103))
+    print(part2("day14/input.txt", (101, 103)))
