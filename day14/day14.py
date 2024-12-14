@@ -2,6 +2,9 @@ from collections import OrderedDict
 from tools.file import read_file_as_strings
 import re
 
+import os
+from tools.print import print_array
+
 INPUT_PATTERN = r"([-]*\d+)"
 
 
@@ -84,3 +87,54 @@ def part1(filepath, map_size):
         final_positions.append(final_pos)
 
     return calculate_safety_factor(final_positions, map_size)
+
+
+def clear_screen():
+    os.system("clear")
+
+
+def print_map(locations, map_size, seconds):
+    unique_locations = set(locations)
+    size_x, size_y = map_size
+
+    # we're gonna try to find straight lines with lots of robots...
+    # should probably find a more direct way.. but this worked!
+
+    max_robots_in_row = 0
+
+    this_map = []
+
+    for y in range(size_y):
+        row = []
+        robots_in_row = 0
+        for x in range(size_x):
+            if (x, y) in unique_locations:
+                row.append("O")
+                robots_in_row += 1
+            else:
+                row.append(".")
+        max_robots_in_row = max(max_robots_in_row, robots_in_row)
+        this_map.append(row)
+
+    if max_robots_in_row == 32:
+        print_array(this_map)
+        print(f"{seconds} elapsed")
+        input("Press enter for next map")
+        clear_screen()
+
+
+def part2(filepath, map_size):
+    robots = parse_input(filepath)
+
+    robot_positions = [calculate_positions(robot, map_size) for robot in robots]
+
+    distinct_maps = zip(*robot_positions)
+
+    for seconds, robot_map in enumerate(distinct_maps):
+        print_map(robot_map, map_size, seconds)
+
+    return 0
+
+
+if __name__ == "__main__":
+    part2("day14/input.txt", (101, 103))
