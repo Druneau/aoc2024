@@ -2,7 +2,7 @@ import day15
 
 PATH_SIMPLE = "day15/input_simple.txt"
 PATH_EXAMPLE = "day15/input_example.txt"
-PATH_EXAMPLE = "day15/input.txt"
+PATH_INPUT = "day15/input.txt"
 
 
 def test_shift():
@@ -59,4 +59,4 @@ def test_update_boxes():
 def test_part1():
     assert day15.part1(PATH_SIMPLE) == 2028
     assert day15.part1(PATH_EXAMPLE) == 10092
-    assert day15.part1(PATH_INPUT) == 1
+    assert day15.part1(PATH_INPUT) == 1318523
