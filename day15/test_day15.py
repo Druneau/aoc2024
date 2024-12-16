@@ -78,5 +78,6 @@ def test_widen_warehouse():
 
 
 def test_part2():
+    assert day15.part2("day15/input_problem.txt", already_wide=True) == 1006
     assert day15.part2(PATH_EXAMPLE) == 9021
-    assert day15.part2(PATH_INPUT) < 1341489
+    assert day15.part2(PATH_INPUT) == 1337648

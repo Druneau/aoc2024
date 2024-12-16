@@ -119,7 +119,7 @@ def get_wide_obstacles(warehouse, move, robot):
     obstacles = []
     pushed_locations = deque([(r, c)])
     visited = set()
-    visited.add((c))
+    visited.add((r, c))
 
     while pushed_locations:
         r, c = pushed_locations.popleft()
@@ -132,21 +132,21 @@ def get_wide_obstacles(warehouse, move, robot):
                 break
 
             if char == BOX_LEFT and move in UP:
-                if (c + 1) not in visited:
+                if (r, c + 1) not in visited:
                     pushed_locations.append((r, c + 1))
-                    visited.add((c + 1))
+                    visited.add((r, c + 1))
             if char in BOX_RIGHT and move in UP:
-                if (c - 1) not in visited:
+                if (r, c - 1) not in visited:
                     pushed_locations.append((r, c - 1))
-                    visited.add((c - 1))
+                    visited.add((r, c - 1))
             if char == BOX_LEFT and move in DOWN:
-                if (c + 1) not in visited:
+                if (r, c + 1) not in visited:
                     pushed_locations.append((r, c + 1))
-                    visited.add((c + 1))
+                    visited.add((r, c + 1))
             if char in BOX_RIGHT and move in DOWN:
-                if (c - 1) not in visited:
+                if (r, c - 1) not in visited:
                     pushed_locations.append((r, c - 1))
-                    visited.add((c - 1))
+                    visited.add((r, c - 1))
 
             r += dr
             c += dc
@@ -201,6 +201,7 @@ def gps(warehouse):
         for c_idx, char in enumerate(row):
             if char == BOX or char == "[":
                 sum_gps += c_idx + r_idx * 100
+    print(sum_gps)
     return sum_gps
 
 
@@ -221,10 +222,16 @@ def part1(filepath):
     return gps(warehouse)
 
 
-def part2(filepath):
+def check_split_box(warehouse):
+    # just look for a [[ or ]] or [. or .]  meaning we split a box...
+    return True
+
+
+def part2(filepath, already_wide=False):
     warehouse, moves, robot_loc = parse_input(filepath)
 
-    warehouse, robot_loc = widen_warehouse(warehouse, robot_loc)
+    if not already_wide:
+        warehouse, robot_loc = widen_warehouse(warehouse, robot_loc)
 
     for move in moves:
         if move in RIGHT + LEFT:
@@ -241,15 +248,15 @@ def part2(filepath):
                 can_move = False
                 break
 
-        if obstacles == []:
+        if obstacles == [] or obstacles is None:
             can_move = False
 
         if can_move:
             # yes! now shift everything that needs shifting...
-            for obstacle in obstacles:
+            for obstacle in reversed(obstacles):
                 start_loc, obstacle = obstacle
                 shifted = shift(obstacle)
-                print(f"{start_loc}; shifted:{obstacle} --> {shifted}")
+                # print(f"{start_loc}; shifted:{obstacle} --> {shifted}")
                 if move in UP + DOWN:
                     warehouse = update_boxes_wide(warehouse, move, start_loc, shifted)
                 else:
@@ -261,8 +268,12 @@ def part2(filepath):
             robot_loc = (r + dr, c + dc)
 
             warehouse[robot_loc[0]][robot_loc[1]] = ROBOT
-            print(f"move:{move}")
-            print_array(warehouse)
-            input("press key for next...")
+            # print(f"move:{move}")
+            # print_array(warehouse)
+            # input("press key for next...")
 
     return gps(warehouse)
+
+
+if __name__ == "__main__":
+    part2("day15/input.txt")
