@@ -13,6 +13,11 @@ def test_shift():
     assert day15.shift("OO.") == ".OO"
     assert day15.shift("OO.....O") == ".OO....O"
     assert day15.shift("OO") == "OO"
+    assert day15.shift("[][].") == ".[][]"
+    assert day15.shift(".[]") == ".[]"
+    assert day15.shift("[][]") == "[][]"
+    assert day15.shift("][...") == ".][.."
+    assert day15.shift("") == ""
 
 
 def test_parse_input():
@@ -60,3 +65,18 @@ def test_part1():
     assert day15.part1(PATH_SIMPLE) == 2028
     assert day15.part1(PATH_EXAMPLE) == 10092
     assert day15.part1(PATH_INPUT) == 1318523
+
+
+def test_widen_warehouse():
+    warehouse, _, robot = day15.parse_input("day15/input_simple2.txt")
+    widened_warehouse, widened_robot = day15.widen_warehouse(warehouse, robot)
+
+    warehouse_wide, _, robot_wide = day15.parse_input("day15/input_simple2_wide.txt")
+
+    assert widened_warehouse == warehouse_wide
+    assert widened_robot == robot_wide
+
+
+def test_part2():
+    assert day15.part2(PATH_EXAMPLE) == 9021
+    assert day15.part2(PATH_INPUT) < 1341489
