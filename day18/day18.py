@@ -2,52 +2,53 @@ from tools.file import read_file_as_tuples
 import networkx as nx
 
 
-def shortest_steps(fallen_bytes, memory_size):
-    non_corrupted_memory = set()
-    for r in range(memory_size + 1):
-        for c in range(memory_size + 1):
-            if (c, r) not in fallen_bytes:
-                non_corrupted_memory.add((c, r))
+def calculate_shortest_path(corrupted_positions, memory_size):
+    safe_memory = set(
+        (r, c)
+        for r in range(memory_size + 1)
+        for c in range(memory_size + 1)
+        if (r, c) not in corrupted_positions
+    )
 
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    memory_entry = (0, 0)
-    memory_exit = (memory_size, memory_size)
+    start = (0, 0)
+    exit = (memory_size, memory_size)
+
     graph = nx.Graph()
 
-    for loc in non_corrupted_memory:
+    for loc in safe_memory:
         r, c = loc
-        for dir in directions:
-            dr, dc = dir
-
+        for dr, dc in directions:
             neighboor = (r + dr, c + dc)
-            if neighboor in non_corrupted_memory:
-                graph.add_edge(loc, neighboor, direction=dir)
+            if neighboor in safe_memory:
+                graph.add_edge(loc, neighboor)
     try:
-        return nx.shortest_path_length(graph, source=memory_entry, target=memory_exit)
+        return nx.shortest_path_length(graph, source=start, target=exit)
     except nx.NetworkXNoPath:
         return -1
 
 
-def part1(filepath, bytes_fallen, memory_size):
-    bytes_fall_order = read_file_as_tuples(filepath)
-
-    steps_to_exit = shortest_steps(bytes_fall_order[:bytes_fallen], memory_size)
-    print(f"{steps_to_exit} steps to exit when {bytes_fallen} have fallen")
-
+def compute_steps(bytes_fall_order, count, memory_size):
+    steps_to_exit = calculate_shortest_path(bytes_fall_order[:count], memory_size)
+    print(f"{steps_to_exit} steps to exit when {count} bytes have fallen")
     return steps_to_exit
 
 
-def part2(filepath, bytes_fallen, memory_size):
+def part1(filepath, bytes_fallen, memory_size):
     bytes_fall_order = read_file_as_tuples(filepath)
+    return compute_steps(bytes_fall_order, bytes_fallen, memory_size)
 
-    low, high = 0, len(bytes_fall_order)
+
+def part2(filepath, memory_size):
+    bytes_fall_order = read_file_as_tuples(filepath)
+    low, high = 0, len(bytes_fall_order) - 1
+    result = None
 
     while low <= high:
         mid = (low + high) // 2
+        steps_to_exit = compute_steps(bytes_fall_order, mid + 1, memory_size)
 
-        steps_to_exit = shortest_steps(bytes_fall_order[: mid + 1], memory_size)
-        print(f"{steps_to_exit} steps to exit when {mid} have fallen")
         if steps_to_exit == -1:
             result = bytes_fall_order[mid]
             high = mid - 1
