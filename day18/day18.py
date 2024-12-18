@@ -41,10 +41,17 @@ def part1(filepath, bytes_fallen, memory_size):
 def part2(filepath, bytes_fallen, memory_size):
     bytes_fall_order = read_file_as_tuples(filepath)
 
-    for bytes_fallen in range(len(bytes_fall_order)):
-        steps_to_exit = shortest_steps(bytes_fall_order[:bytes_fallen], memory_size)
-        print(
-            f"{steps_to_exit} steps to exit when byte {bytes_fall_order[bytes_fallen-1]} has fallen"
-        )
+    low, high = 0, len(bytes_fall_order)
+
+    while low <= high:
+        mid = (low + high) // 2
+
+        steps_to_exit = shortest_steps(bytes_fall_order[: mid + 1], memory_size)
+        print(f"{steps_to_exit} steps to exit when {mid} have fallen")
         if steps_to_exit == -1:
-            return bytes_fall_order[bytes_fallen - 1]
+            result = bytes_fall_order[mid]
+            high = mid - 1
+        else:
+            low = mid + 1
+
+    return result

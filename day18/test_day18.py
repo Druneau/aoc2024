@@ -12,7 +12,4 @@ def test_part2():
         1,
     )
 
-    assert day18.part2("day18/input.txt", bytes_fallen=0, memory_size=70) == (
-        6,
-        1,
-    )
+    assert day18.part2("day18/input.txt", bytes_fallen=0, memory_size=70) == (61, 50)
