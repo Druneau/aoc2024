@@ -23,8 +23,10 @@ def shortest_steps(fallen_bytes, memory_size):
             neighboor = (r + dr, c + dc)
             if neighboor in non_corrupted_memory:
                 graph.add_edge(loc, neighboor, direction=dir)
-
-    return nx.shortest_path_length(graph, source=memory_entry, target=memory_exit)
+    try:
+        return nx.shortest_path_length(graph, source=memory_entry, target=memory_exit)
+    except nx.NetworkXNoPath:
+        return -1
 
 
 def part1(filepath, bytes_fallen, memory_size):
@@ -34,3 +36,15 @@ def part1(filepath, bytes_fallen, memory_size):
     print(f"{steps_to_exit} steps to exit when {bytes_fallen} have fallen")
 
     return steps_to_exit
+
+
+def part2(filepath, bytes_fallen, memory_size):
+    bytes_fall_order = read_file_as_tuples(filepath)
+
+    for bytes_fallen in range(len(bytes_fall_order)):
+        steps_to_exit = shortest_steps(bytes_fall_order[:bytes_fallen], memory_size)
+        print(
+            f"{steps_to_exit} steps to exit when byte {bytes_fall_order[bytes_fallen-1]} has fallen"
+        )
+        if steps_to_exit == -1:
+            return bytes_fall_order[bytes_fallen - 1]
