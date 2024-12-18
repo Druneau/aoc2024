@@ -12,7 +12,7 @@ def parse_lines(filepath, delimiter=None, transform=lambda x: x):
 
 def read_file_as_tuples(filepath):
     def transform(parts):
-        parts = parts.split()
+        parts = parts.replace(",", " ").split()
         if len(parts) == 2:
             return int(parts[0]), int(parts[1])
         raise ValueError(f"Invalid line format: {' '.join(parts)}")
