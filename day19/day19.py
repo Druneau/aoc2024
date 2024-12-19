@@ -11,32 +11,28 @@ def parse_input(filepath):
 
 
 def count_arrangements(design, towels):
-    memo = {}
+    subdesign_cache = {}
 
     def backtrack(index):
         if index == len(design):
             return 1
 
-        if index in memo:
-            return memo[index]
+        if index in subdesign_cache:
+            return subdesign_cache[index]
 
         count = 0
         for towel in towels:
             if design.startswith(towel, index):
                 count += backtrack(index + len(towel))
 
-        memo[index] = count
+        subdesign_cache[index] = count
         return count
 
     return backtrack(0)
 
 
 def total_arrangements(towels, designs):
-    total_ways = 0
-    for design in designs:
-        ways = count_arrangements(design, towels)
-        total_ways += ways
-    return total_ways
+    return sum(count_arrangements(design, towels) for design in designs)
 
 
 def count_possible_designs(towels, designs):
