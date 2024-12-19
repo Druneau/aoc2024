@@ -42,17 +42,17 @@ def part1(filepath, bytes_fallen, memory_size):
 
 def part2(filepath, memory_size):
     bytes_fall_order = read_file_as_tuples(filepath)
-    low, high = 0, len(bytes_fall_order) - 1
+    path, no_path = 0, len(bytes_fall_order) - 1
     result = None
 
-    while low <= high:
-        mid = (low + high) // 2
-        steps_to_exit = compute_steps(bytes_fall_order, mid + 1, memory_size)
+    while path <= no_path:
+        try_path = (path + no_path) // 2
+        steps_to_exit = compute_steps(bytes_fall_order, try_path + 1, memory_size)
 
         if steps_to_exit == -1:
-            result = bytes_fall_order[mid]
-            high = mid - 1
+            result = bytes_fall_order[try_path]
+            no_path = try_path - 1
         else:
-            low = mid + 1
+            path = try_path + 1
 
     return result
