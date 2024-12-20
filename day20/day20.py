@@ -102,9 +102,10 @@ def count_cheats_above_threshold(filepath, threshold, cheat_picoseconds_limit=2)
     map_rows = len(map_of_racetrack)
     map_cols = len(map_of_racetrack[0])
 
-    shortcuts = []
-
     racetrack = get_racetrack(map_of_racetrack)
+
+    # find all possible shortcuts with given parameters
+    shortcuts = []
     for loc in racetrack:
         shortcuts.extend(
             find_cheat_pairs(
@@ -116,29 +117,22 @@ def count_cheats_above_threshold(filepath, threshold, cheat_picoseconds_limit=2)
         )
 
     racetrack_location_to_index = {loc: idx for idx, loc in enumerate(racetrack)}
-    picoseconds_saved_count = {}
 
+    # calculate how many of the shortcuts give us the same or more savings as threshold
+    picoseconds_saved_count = {}
     for shortcut in shortcuts:
         locations, distance = shortcut
         track_exit, track_entry = locations
         index_exit = racetrack_location_to_index[track_exit]
         index_entry = racetrack_location_to_index[track_entry]
 
-        index_exit_track = min(index_exit, index_entry)
-        index_entry_track = max(index_exit, index_entry)
-
-        picoseconds_saved = index_entry_track - index_exit_track - distance
+        picoseconds_saved = index_entry - index_exit - distance
         if picoseconds_saved > 0:
             picoseconds_saved_count.setdefault(picoseconds_saved, 0)
             picoseconds_saved_count[picoseconds_saved] += 1
 
-    return (
-        sum(
-            count
-            for saved, count in picoseconds_saved_count.items()
-            if saved >= threshold
-        )
-        / 2
+    return sum(
+        count for saved, count in picoseconds_saved_count.items() if saved >= threshold
     )
 
 
