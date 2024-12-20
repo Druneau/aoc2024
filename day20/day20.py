@@ -34,27 +34,40 @@ def get_racetrack(map_of_racetrack):
     return racetrack
 
 
-def find_cheat_pairs(map_of_racetrack, location):
-    r, c = location
+def find_cheat_pairs(
+    map_of_racetrack, map_size, track_exit_location, max_cheat_distance
+):
+    r, c = track_exit_location
     cheat_pairs = []
 
-    # Check left-right pair
-    if map_of_racetrack[r][c - 1] in {".", "S", "E"} and map_of_racetrack[r][c + 1] in {
-        ".",
-        "S",
-        "E",
-    }:
-        cheat_pairs.append(((r, c - 1), (r, c + 1)))
+    track_entry_locations = get_locations_within_distance(
+        track_exit_location, max_cheat_distance, map_size
+    )
 
-    # Check above-below pair
-    if map_of_racetrack[r - 1][c] in {".", "S", "E"} and map_of_racetrack[r + 1][c] in {
-        ".",
-        "S",
-        "E",
-    }:
-        cheat_pairs.append(((r - 1, c), (r + 1, c)))
+    for loc, picoseconds in track_entry_locations:
+        r, c = loc
+        if map_of_racetrack[r][c] in {".", "S", "E"}:
+            cheat_pairs.append(((track_exit_location, loc), picoseconds))
 
     return cheat_pairs
+
+
+def get_locations_within_distance(location, distance, map_size):
+    row, col = location
+    possible_locations = []
+
+    max_row, max_col = map_size
+    min_row, min_col = 1, 1
+
+    for dr in range(-distance, distance + 1):
+        for dc in range(-distance, distance + 1):
+            ortho_distance = abs(dr) + abs(dc)
+            if ortho_distance <= distance:
+                new_row, new_col = row + dr, col + dc
+                if min_row <= new_row < max_row and min_col <= new_col < max_col:
+                    possible_locations.append(((new_row, new_col), ortho_distance))
+
+    return possible_locations
 
 
 def print_racetrack(racetrack_locations, shortcut_location):
@@ -84,34 +97,54 @@ def print_racetrack(racetrack_locations, shortcut_location):
         print("".join(line))
 
 
-def part1(filepath, threshold):
+def count_cheats_above_threshold(filepath, threshold, cheat_picoseconds_limit=2):
     map_of_racetrack = read_file_as_chars(filepath)
+    map_rows = len(map_of_racetrack)
+    map_cols = len(map_of_racetrack[0])
 
     shortcuts = []
 
-    for row_index in range(1, len(map_of_racetrack) - 1):
-        for col_index in range(1, len(map_of_racetrack) - 1):
-            if map_of_racetrack[row_index][col_index] == "#":
-                shortcuts.extend(
-                    find_cheat_pairs(map_of_racetrack, (row_index, col_index))
-                )
-
     racetrack = get_racetrack(map_of_racetrack)
+    for loc in racetrack:
+        shortcuts.extend(
+            find_cheat_pairs(
+                map_of_racetrack,
+                (map_rows, map_cols),
+                loc,
+                cheat_picoseconds_limit,
+            )
+        )
+
     racetrack_location_to_index = {loc: idx for idx, loc in enumerate(racetrack)}
     picoseconds_saved_count = {}
 
     for shortcut in shortcuts:
-        track_exit, track_entry = shortcut
+        locations, distance = shortcut
+        track_exit, track_entry = locations
         index_exit = racetrack_location_to_index[track_exit]
         index_entry = racetrack_location_to_index[track_entry]
 
         index_exit_track = min(index_exit, index_entry)
         index_entry_track = max(index_exit, index_entry)
 
-        picoseconds_saved = index_entry_track - index_exit_track - 2
-        picoseconds_saved_count.setdefault(picoseconds_saved, 0)
-        picoseconds_saved_count[picoseconds_saved] += 1
+        picoseconds_saved = index_entry_track - index_exit_track - distance
+        if picoseconds_saved > 0:
+            picoseconds_saved_count.setdefault(picoseconds_saved, 0)
+            picoseconds_saved_count[picoseconds_saved] += 1
 
-    return sum(
-        count for saved, count in picoseconds_saved_count.items() if saved >= threshold
+    return (
+        sum(
+            count
+            for saved, count in picoseconds_saved_count.items()
+            if saved >= threshold
+        )
+        / 2
     )
+
+
+def part1(filepath, threshold):
+    return count_cheats_above_threshold(filepath, threshold)
+
+
+def part2(filepath, threshold, cheat_picoseconds_limit):
+    return count_cheats_above_threshold(filepath, threshold, cheat_picoseconds_limit)
