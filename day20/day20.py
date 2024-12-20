@@ -1,5 +1,4 @@
 from tools.file import read_file_as_chars
-import networkx
 
 
 def get_racetrack(map_of_racetrack):
