@@ -125,24 +125,44 @@ def part1(filepath):
 def part2(filepath, register_a_start_value=0):
     registers, program = parse_program(filepath)
 
-    program_as_output = ",".join(str(value) for value in program)
-
     register_a = register_a_start_value
+
     while True:
         computer = Computer()
         registers["A"] = register_a
         computer.load_program(registers, program)
         computer.run()
 
-        if program_as_output == computer.output:
+        output = [int(num) for num in computer.output.split(",")]
+        print(f"register_a:{register_a}")
+        print_as_bits(program)
+        print_as_bits(output)
+        if program == output:
+            print(f"register_a:{register_a}")
+            print_as_bits(program)
+            print_as_bits(output)
             break
 
+        break
         register_a += 1
-        if register_a % 100000 == 0:
-            print(f"\rCounter reached: {register_a}", end="", flush=True)
+
     return register_a
 
 
+def geometric_series(terms):
+    return [2 ** (3 * n) for n in range(terms)]
+
+
+def get_as_bits(list):
+    return f"{[format(num, "03b") for num in list]} --> {list}"
+
+
+def print_as_bits(list):
+    for num in list:
+        print(f"{format(num, '03b')}", end=" ")
+    print(f"-->{list}")
+
+
 if __name__ == "__main__":
+    print(geometric_series(16))
     register_a = part2("day17/input.txt", int(sys.argv[1]))
-    print(f"found {register_a} as register A value produced copy of program")
