@@ -25,3 +25,8 @@ def test_evolve_secret():
 def test_part1():
     assert day22.part1("day22/input_example.txt", 2000) == 37327623
     assert day22.part1("day22/input.txt", 2000) == 14691757043
+
+
+def test_part2():
+    assert day22.part2("day22/input_example_part2.txt", 2000) == 23
+    # jassert day22.part2("day22/input.txt", 2000) == 23
