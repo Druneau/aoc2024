@@ -58,3 +58,7 @@ def read_file_grid_size(filepath):
         line_count = len(lines)
         line_length = len(lines[0].strip())
         return (line_length, line_count)
+
+
+def read_file_as_ints(filepath):
+    return parse_lines(filepath, transform=int)

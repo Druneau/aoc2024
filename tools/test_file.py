@@ -43,3 +43,7 @@ def test_read_file_as_dict():
         "0": [(8, 1), (5, 2), (7, 3), (4, 4)],
         "A": [(6, 5), (8, 8), (9, 9)],
     }
+
+
+def test_read_file_as_ints():
+    assert tools.file.read_file_as_ints("day22/input_example.txt") == [1, 10, 100, 2024]
