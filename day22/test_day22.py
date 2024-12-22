@@ -29,4 +29,4 @@ def test_part1():
 
 def test_part2():
     assert day22.part2("day22/input_example_part2.txt", 2000) == 23
-    # jassert day22.part2("day22/input.txt", 2000) == 23
+    assert day22.part2("day22/input.txt", 2000) == 1831

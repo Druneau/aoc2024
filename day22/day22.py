@@ -57,15 +57,16 @@ def part2(filepath, rounds):
         changes = [prices[i] - prices[i - 1] for i in range(1, len(prices))]
         sequences = list(zip(changes, changes[1:], changes[2:], changes[3:]))
 
-        if len(prices) != 2000 or len(sequences) != 1996:
+        if len(prices) != rounds or len(sequences) != rounds - 4:
             raise ValueError("should not happen")
 
         banana_price_index = {}
         for i, seq in enumerate(sequences):
             current_price = prices[i + 4]  # Offset to align with the sequence
-            banana_price_index[seq] = max(
-                banana_price_index.get(seq, float("-inf")), current_price
-            )
+            # THIS IS WHAT TRIPPED ME UP FOR 2 HOURS...
+            # if more than 1 sequence same... only FIRST one will be hit
+            if seq not in banana_price_index:
+                banana_price_index[seq] = current_price
 
         for seq, value in banana_price_index.items():
             if seq not in all_banana_dict:
@@ -75,8 +76,8 @@ def part2(filepath, rounds):
     max_key = max(all_banana_dict, key=lambda k: sum(all_banana_dict[k]))
     max_sum = sum(all_banana_dict[max_key])
 
-    print(f"Key with the largest sum: {max_key}, Sum: {max_sum}")
+    print(f"{max_key}, {max_sum}")
 
-    write_and_open_in_nvim(all_banana_dict)
+    # write_and_open_in_nvim(all_banana_dict)
 
     return max_sum
