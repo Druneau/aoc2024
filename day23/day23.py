@@ -27,6 +27,14 @@ def find_computer_triangles(lan):
     return unique_triangles
 
 
+def find_employee_lan(lan):
+    largest_clique = max(
+        (list(clique) for clique in nx.enumerate_all_cliques(lan)), key=len
+    )
+
+    return largest_clique
+
+
 def filter_historian(triangles, char="t"):
     possible_historian_lan = []
 
@@ -47,3 +55,15 @@ def part1(filepath):
     historian_lan = filter_historian(sets_of_three)
 
     return len(historian_lan)
+
+
+def part2(filepath):
+    connections = read_file_as_strings(filepath)
+
+    lan = build_graph(connections)
+
+    employees = find_employee_lan(lan)
+
+    password = ",".join(sorted(employees))
+
+    return password
