@@ -35,12 +35,12 @@ def test_parse_equation():
 
     assert day24.parse_equation("x00: 1") == (
         "x00",
-        [True],
+        True,
     )
 
     assert day24.parse_equation("y01: 0") == (
         "y01",
-        [False],
+        False,
     )
 
 

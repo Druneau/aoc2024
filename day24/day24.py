@@ -1,5 +1,4 @@
 from tools.file import read_file_as_strings
-from pprint import pprint
 
 
 def _and(wire1, wire2):
@@ -19,75 +18,49 @@ def parse_equation(line):
 
     if len(terms) == 2:
         key = terms[0][:-1]
-        value = [bool(int(terms[1]))]
+        value = bool(int(terms[1]))
 
-        return (key, value)
-    elif len(terms) == 5:
-        term1 = terms[0]
-        operation = terms[1]
-        term2 = terms[2]
-        key = terms[4]
+        return key, value
 
-        if operation == "AND":
-            operation = _and
-        elif operation == "OR":
-            operation = _or
-        elif operation == "XOR":
-            operation = _xor
+    if len(terms) == 5:
+        term1, operation, term2, _, key = terms
 
-        value = [term1, operation, term2]
-        return (key, value)
+        operations = {"AND": _and, "OR": _or, "XOR": _xor}
+        equation = [term1, operations[operation], term2]
 
-    return (None, None)
+        return key, equation
 
 
 def parse_input(filepath):
     lines = read_file_as_strings(filepath)
+    lines = [line for line in lines if line.strip()]
 
-    wires = {}
-
-    for line in lines:
-        key, value = parse_equation(line)
-
-        if key is None:
-            continue
-        wires[key] = value
-
+    wires = {key: value for line in lines for key, value in [parse_equation(line)]}
     return wires
 
 
 def solve(wires, key):
-    # If the key already resolves to a value, return it
-    if len(wires[key]) == 1:
-        return wires[key][0]  # The value is already resolved (True or False)
+    if isinstance(wires[key], bool):
+        return wires[key]
 
-    # Otherwise, extract [operand1, function, operand2]
     operand1, func, operand2 = wires[key]
 
-    # Resolve operands recursively
-    value1 = solve(wires, operand1) if operand1 in wires else operand1
-    value2 = solve(wires, operand2) if operand2 in wires else operand2
+    value1 = solve(wires, operand1)
+    value2 = solve(wires, operand2)
 
-    # Apply the function and cache the result
     result = func(value1, value2)
-    wires[key] = [result]  # Cache the resolved value to avoid recomputation
+    wires[key] = result
     return result
 
 
 def part1(filepath):
     wires = parse_input(filepath)
 
-    bits_dict = {}
-    for key in wires:
-        if key.startswith("z"):
-            key_number = int(key[1:])
-            value = solve(wires, key)
-            bits_dict[key_number] = value
+    bits_dict = {
+        int(key[1:]): solve(wires, key) for key in wires if key.startswith("z")
+    }
 
-    bits_dict = dict(sorted(bits_dict.items()))
-    bits = [value for key, value in bits_dict.items()]
-    bits.reverse()
-    binary_str = "".join("1" if bit else "0" for bit in bits)
-    decimal_number = int(binary_str, 2)
-
-    return decimal_number
+    binary_str = "".join(
+        "1" if bit else "0" for _, bit in sorted(bits_dict.items(), reverse=True)
+    )
+    return int(binary_str, 2)
