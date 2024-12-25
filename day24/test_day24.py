@@ -48,3 +48,15 @@ def test_part1():
     assert day24.part1("day24/input_example.txt") == 4
     assert day24.part1("day24/input_example_larger.txt") == 2024
     assert day24.part1("day24/input.txt") == 55544677167336
+
+
+def test_number_to_bits():
+    assert day24.number_to_bits(5, num_bits=4) == [False, True, False, True]
+
+
+def test_bits_to_number():
+    assert day24.bits_to_number([False, False, False, True, False, True]) == 5
+
+
+def test_part2():
+    assert day24.part2("day24/input_example_part2.txt") == "z00,z01,z02,z05"

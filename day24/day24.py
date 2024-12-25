@@ -1,4 +1,5 @@
 from tools.file import read_file_as_strings
+import copy
 
 
 def _and(wire1, wire2):
@@ -53,6 +54,10 @@ def solve(wires, key):
     return result
 
 
+def get_output_bits(solved_wires):
+    return [bit for _, bit in sorted(solved_wires.items(), reverse=True)]
+
+
 def part1(filepath):
     wires = parse_input(filepath)
 
@@ -60,7 +65,79 @@ def part1(filepath):
         int(key[1:]): solve(wires, key) for key in wires if key.startswith("z")
     }
 
-    binary_str = "".join(
-        "1" if bit else "0" for _, bit in sorted(bits_dict.items(), reverse=True)
-    )
-    return int(binary_str, 2)
+    output_bits = get_output_bits(bits_dict)
+
+    return bits_to_number(output_bits)
+
+
+def number_to_bits(number, num_bits=None):
+    binary_str = bin(number)[2:]
+    if num_bits:
+        binary_str = binary_str.zfill(num_bits)
+
+    return [bit == "1" for bit in binary_str]
+
+
+def bits_to_string(bits):
+    return "".join("1" if bit else "0" for bit in bits)
+
+
+def bits_to_number(bits):
+    return int(bits_to_string(bits), 2)
+
+
+def get_bit_count(wires):
+    # x34 = 34 bits; find max number
+    input_bit_count = max(int(key[1:]) for key in wires if key.startswith("x"))
+    output_bit_count = max(int(key[1:]) for key in wires if key.startswith("z"))
+    return input_bit_count, output_bit_count
+
+
+def bits_max_number(bit_count):
+    return 2 ^ bit_count - 1
+
+
+def format_with_prefix(prefix, number, width):
+    return f"{prefix}{number:0{width}d}"
+
+
+def update_input_bits(wires, x_bits, y_bits):
+    for number, bit in enumerate(x_bits):
+        wires[format_with_prefix("x", number, 2)] = bit
+
+    for number, bit in enumerate(y_bits):
+        wires[format_with_prefix("y", number, 2)] = bit
+
+
+def part2(filepath):
+    wires = parse_input(filepath)
+
+    input_bit_count, output_bit_count = get_bit_count(wires)
+
+    input_max_number = bits_max_number(input_bit_count)
+    output_max_number = bits_max_number(output_bit_count)
+
+    print(f"{input_bit_count}bit inputs --> {input_max_number}")
+    print(f"{output_bit_count}bit output --> {output_max_number}")
+
+    for x_number in range(input_max_number):
+        x_bits = number_to_bits(x_number)
+        for y_number in range(input_max_number):
+            simulation_wires = copy.deepcopy(wires)
+
+            y_bits = number_to_bits(y_number)
+
+            update_input_bits(simulation_wires, x_bits, y_bits)
+
+            output_bits = {
+                int(key[1:]): solve(simulation_wires, key)
+                for key in wires
+                if key.startswith("z")
+            }
+
+            output_bits_list = get_output_bits(output_bits)
+
+            real_z_bits = number_to_bits(x_number + y_number, output_bit_count + 1)
+            print(f"{x_number} + {y_number} = {x_number+y_number}")
+            print(bits_to_string(output_bits_list))
+            print(bits_to_string(real_z_bits))
