@@ -1,8 +1,9 @@
-import networkx as nx
 from tools.file import read_file_as_chars
 
+from collections import deque
 
-def build_paths(filepath):
+
+def build_maze(filepath):
     maze = read_file_as_chars(filepath)
 
     maze_start = None
@@ -20,76 +21,62 @@ def build_paths(filepath):
                 elif cell == "E":
                     maze_end = cur_loc
 
-    # build a graph, we can reach if it's in the maze_path
-    # and distance is only 1 away in any direction
-
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-    graph = nx.Graph()
-
-    for loc in maze_path:
-        r, c = loc
-        for dir in directions:
-            dr, dc = dir
-
-            neighboor = (r + dr, c + dc)
-            if neighboor in maze_path:
-                graph.add_edge(loc, neighboor, direction=dir)
-
-    return nx.all_simple_paths(graph, source=maze_start, target=maze_end)
+    return maze_path, maze_start, maze_end
 
 
-def direction_sensitive_weight(u, v, edge_data, current_direction):
-    next_direction = edge_data["direction"]
-
-    if current_direction and current_direction != next_direction:
-        return 1001
-    return 1
+directions = [(1, 0), (0, -1), (-1, 0), (0, 1)]
 
 
-def path_diff(path):
-    diff = []
-    for a, b in zip(path, path[1:]):
-        a_r, a_c = a
-        b_r, b_c = b
-        diff.append((b_r - a_r, b_c - a_c))
-    return diff
+def turn_right(cur_dir):
+    return directions[
+        (directions.index(cur_dir) + 1 + len(directions)) % len(directions)
+    ]
 
 
-def calculate_score(path):
-    # a change in direction score +=1000
-    # a step in same direction socre +=1
+def turn_left(cur_dir):
+    return directions[
+        (directions.index(cur_dir) - 1 + len(directions)) % len(directions)
+    ]
 
-    diff = path_diff(path)
 
-    # START FACING EAST (RIGHT).  POSSIBLY NEED TO TURN ONCE
-    if diff[0] != (0, 1):
-        diff.insert(0, (0, 1))
+def bfs_score(path, start, end):
+    queue = deque()
 
-    steps = 0
-    turns = 0
+    location_scores = {}
 
-    for a, b in zip(diff, diff[1:]):
-        if a == b:
-            steps += 1
-        else:
-            turns += 1
+    location_scores[start] = 0
 
-    # print(f"{steps} steps; {turns} turns")
-    return steps + turns * (1000 + 1)
+    maze_start = (*start, directions[3], 0)  # x, y, direction, score
+    queue.append(maze_start)
+
+    while queue:
+        cur_x, cur_y, cur_dir, cur_score = queue.popleft()
+
+        allowed_directions_and_score = [
+            (cur_dir, cur_score + 1),
+            (turn_left(cur_dir), cur_score + 1001),
+            (turn_right(cur_dir), cur_score + 1001),
+        ]
+
+        for new_dir, new_score in allowed_directions_and_score:
+            new_x, new_y = cur_x + new_dir[0], cur_y + new_dir[1]
+            new_loc = (new_x, new_y)
+
+            if new_loc not in path:
+                continue
+
+            if new_loc in location_scores:
+                if new_score < location_scores[new_loc]:
+                    location_scores[new_loc] = new_score
+                    queue.append((*new_loc, new_dir, new_score))
+            else:
+                location_scores[new_loc] = new_score
+                queue.append((*new_loc, new_dir, new_score))
+
+    return location_scores[end]
 
 
 def part1(filepath):
-    paths = build_paths(filepath)
+    maze, start, end = build_maze(filepath)
 
-    min_score = None
-
-    for path in paths:
-        path_score = calculate_score(path)
-
-        if min_score is None:
-            min_score = path_score
-        else:
-            min_score = min(min_score, path_score)
-
-    return min_score
+    return bfs_score(maze, start, end)
