@@ -8,13 +8,13 @@ def build_maze(filepath):
 
     maze_start = None
     maze_end = None
-    maze_path = []
+    maze_path = set()
 
     for r_idx, row in enumerate(maze):
         for c_idx, cell in enumerate(row):
             if cell in "." + "S" + "E":
                 cur_loc = (r_idx, c_idx)
-                maze_path.append(cur_loc)
+                maze_path.add(cur_loc)
 
                 if cell == "S":
                     maze_start = cur_loc
