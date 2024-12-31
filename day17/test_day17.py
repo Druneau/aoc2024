@@ -8,4 +8,15 @@ def test_part1():
 
 def test_part2():
     assert day17.part2("day17/input_example_2.txt") == 117440
-    # assert day17.part2("day17/input.txt") == 117440
+    assert day17.part2("day17/input.txt") == 23035799752301
+
+
+def test_calculate_register_a_from_bits():
+    assert day17.calculate_register_a_from_bits([0]) == 0
+    assert day17.calculate_register_a_from_bits([7]) == 7
+    assert day17.calculate_register_a_from_bits([7, 1]) == 7 + 1 * 2**3
+    assert day17.calculate_register_a_from_bits([7, 7]) == 7 + 7 * 2**3
+    assert (
+        day17.calculate_register_a_from_bits([7, 7, 0, 0, 0, 1])
+        == 7 + 7 * 2**3 + 0 * 2**6 + 0 * 2**9 + 0 * 2**12 + 1 * 2**15
+    )

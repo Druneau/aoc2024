@@ -98,7 +98,6 @@ class Computer:
 def parse_program(filepath):
     lines = read_file_as_strings(filepath)
 
-    # Extract register values
     registers = {}
     for line in lines:
         if "Register" in line:
@@ -122,10 +121,16 @@ def part1(filepath):
     return computer.output
 
 
-def part2(filepath, register_a_start_value=0):
+def part2(filepath):
     registers, program = parse_program(filepath)
 
-    register_a = register_a_start_value
+    # we're gonna go over it bit group by bit goup
+    bits = len(program)
+    bit_multipliers = [0] * bits
+    current_bit_index = bits - 1
+
+    register_a = calculate_register_a_from_bits(bit_multipliers)
+    print(register_a)
 
     while True:
         computer = Computer()
@@ -134,35 +139,31 @@ def part2(filepath, register_a_start_value=0):
         computer.run()
 
         output = [int(num) for num in computer.output.split(",")]
-        print(f"register_a:{register_a}")
-        print_as_bits(program)
-        print_as_bits(output)
+        output += [0] * (bits - len(output)) if len(output) < bits else []
         if program == output:
-            print(f"register_a:{register_a}")
-            print_as_bits(program)
-            print_as_bits(output)
             break
 
-        break
-        register_a += 1
+        if program[current_bit_index:] == output[current_bit_index:]:
+            current_bit_index -= 1
+        else:
+            bit_multipliers[current_bit_index] += 1
 
+            if bit_multipliers[current_bit_index] == 8:
+                bit_multipliers[current_bit_index] = 0
+                current_bit_index += 1
+                bit_multipliers[current_bit_index] += 1
+
+        register_a = calculate_register_a_from_bits(bit_multipliers)
+
+    print(f"In :{program}")
+    print(f"Out:{output}")
+    print(f"reg_a:{register_a}")
     return register_a
 
 
-def geometric_series(terms):
-    return [2 ** (3 * n) for n in range(terms)]
+def calculate_register_a_from_bits(bit_multipliers):
+    register_a = 0
+    for index, multiplier in enumerate(bit_multipliers):
+        register_a += multiplier * 2 ** (3 * index)
 
-
-def get_as_bits(list):
-    return f"{[format(num, "03b") for num in list]} --> {list}"
-
-
-def print_as_bits(list):
-    for num in list:
-        print(f"{format(num, '03b')}", end=" ")
-    print(f"-->{list}")
-
-
-if __name__ == "__main__":
-    print(geometric_series(16))
-    register_a = part2("day17/input.txt", int(sys.argv[1]))
+    return register_a
