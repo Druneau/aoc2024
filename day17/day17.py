@@ -124,7 +124,6 @@ def part1(filepath):
 def part2(filepath):
     registers, program = parse_program(filepath)
 
-    # we're gonna go over it bit group by bit goup
     bits = len(program)
     bit_multipliers = [0] * bits
     current_bit_index = bits - 1
@@ -139,7 +138,6 @@ def part2(filepath):
         computer.run()
 
         output = [int(num) for num in computer.output.split(",")]
-        output += [0] * (bits - len(output)) if len(output) < bits else []
         if program == output:
             break
 
@@ -158,6 +156,7 @@ def part2(filepath):
     print(f"In :{program}")
     print(f"Out:{output}")
     print(f"reg_a:{register_a}")
+    print(f"bit_multipliers:{bit_multipliers}")
     return register_a
 
 
