@@ -104,7 +104,6 @@ def parse_program(filepath):
             key, value = line.split(":")
             registers[key.strip().split()[1]] = int(value.strip())
 
-    # Extract program
     program_line = [line for line in lines if "Program" in line][0]
     program = list(map(int, program_line.split(":")[1].strip().split(",")))
 
@@ -146,7 +145,7 @@ def part2(filepath):
         else:
             bit_multipliers[current_bit_index] += 1
 
-            if bit_multipliers[current_bit_index] == 8:
+            while bit_multipliers[current_bit_index] == 8:
                 bit_multipliers[current_bit_index] = 0
                 current_bit_index += 1
                 bit_multipliers[current_bit_index] += 1
