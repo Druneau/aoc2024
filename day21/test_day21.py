@@ -26,7 +26,7 @@ def test_build_deltas():
 
 
 def test_transform():
-    assert day21.transform("029A") == list("<A^A^^>AvvvA")
+    assert day21.transform("029A") == list("<A^A>^^AvvvA")
 
 
 def test_finger_to_robot_to_robot_to_robot():
@@ -41,5 +41,9 @@ def test_complexity():
     assert day21.complexity("379A") == 64 * 379
 
 
-def test_part1():
+def test_part1_example():
     assert day21.part1("day21/input_example.txt") == 126384
+
+
+def test_part1():
+    assert day21.part1("day21/input.txt") < 188374

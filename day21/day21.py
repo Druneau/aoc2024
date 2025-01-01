@@ -83,28 +83,40 @@ def transform(sequence):
         to_press = ""
         # any risk hitting empty spot?
         if is_numeric_keypad:
-            if from_key in {"7, 4, 1"}:
-                to_press = dc * char_col + dr * char_row + "A"
-            else:
+            if from_key in "0A":
                 to_press = dr * char_row + dc * char_col + "A"
+            else:
+                to_press = dc * char_col + dr * char_row + "A"
         else:
-            if from_key == "<":
-                to_press = dc * char_col + dr * char_row + "A"
-            else:
+            if from_key == "^A":
                 to_press = dr * char_row + dc * char_col + "A"
+            else:
+                to_press = dc * char_col + dr * char_row + "A"
+
+        # if "".join(to_press) == "<v<A" or "".join(to_press) == "<<vA":
+        #    print(f"fixing... {"".join(to_press)} for {from_key} to {to_key} with v<<A")
+        #    to_press = list("v<<A")
+
+        # if "".join(to_press) == "v<vA" or "".join(to_press) == "vv<A":
+        #    print(f"fixing... {"".join(to_press)} for {from_key} to {to_key} with v<<A")
+        #    to_press = list("<vvA")
 
         key_presses.extend(to_press)
+        print(to_press, end="|")
         # print(f"{from_key} to {to_key} = {to_press}")
 
+    print("")
     return key_presses
 
 
 def finger_to_robot_to_robot_to_robot(sequence):
+    print(sequence)
     robotcommand1 = transform(sequence[:])
     robotcommand2 = transform(robotcommand1[:])
     fingercommand = transform(robotcommand2[:])
 
     print("----")
+
     print("".join(fingercommand))
     print("".join(robotcommand2))
     print("".join(robotcommand1))
@@ -122,7 +134,6 @@ def complexity(code):
 
 
 def part1(filepath):
-    print()
     codes = read_file_as_strings(filepath)
 
     total_complexity = 0
